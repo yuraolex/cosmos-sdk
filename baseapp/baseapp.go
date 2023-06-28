@@ -13,6 +13,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -135,6 +137,9 @@ type BaseApp struct { // nolint: maligned
 	indexEvents map[string]struct{}
 
 	latestHeader tmproto.Header
+
+	// streamingManager for managing instances and configuration of ABCIListener services
+	streamingManager storetypes.StreamingManager
 }
 
 var _ upgrade.AppVersionManager = (*BaseApp)(nil)
@@ -394,8 +399,10 @@ func (app *BaseApp) IsSealed() bool { return app.sealed }
 func (app *BaseApp) setCheckState(header tmproto.Header) {
 	ms := app.cms.CacheMultiStore()
 	app.checkState = &state{
-		ms:  ms,
-		ctx: sdk.NewContext(ms, header, true, app.logger).WithMinGasPrices(app.minGasPrices),
+		ms: ms,
+		ctx: sdk.NewContext(ms, header, true, app.logger).
+			WithMinGasPrices(app.minGasPrices).
+			WithStreamingManager(app.streamingManager),
 	}
 }
 
@@ -406,8 +413,9 @@ func (app *BaseApp) setCheckState(header tmproto.Header) {
 func (app *BaseApp) setDeliverState(header tmproto.Header) {
 	ms := app.cms.CacheMultiStore()
 	app.deliverState = &state{
-		ms:  ms,
-		ctx: sdk.NewContext(ms, header, false, app.logger),
+		ms: ms,
+		ctx: sdk.NewContext(ms, header, false, app.logger).
+			WithStreamingManager(app.streamingManager),
 	}
 }
 

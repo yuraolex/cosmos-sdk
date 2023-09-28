@@ -40,11 +40,12 @@ type AppOptions struct {
 	// module or need to be improved.
 	ModuleOptions map[string]*autocliv1.ModuleOptions `optional:"true"`
 
-	// ClientCtx contains the necessary information needed to execute the commands.
-	ClientCtx *client.Context
-
 	// Keyring is the keyring to use for client/v2.
 	Keyring keyring.Keyring `optional:"true"`
+
+	// ClientCtx contains the necessary information needed to execute the commands.
+	// The goal is to remove the reliance on client.Context in the future.
+	ClientCtx *client.Context
 }
 
 // EnhanceRootCommand enhances the provided root command with autocli AppOptions,

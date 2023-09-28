@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"github.com/cockroachdb/errors"
+	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // BuildMsgCommand builds the msg commands for all the provided modules. If a custom command is provided for a
@@ -113,7 +116,14 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 			return err
 		}
 
-		return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), input)
+		if clientCtx.TxConfig == nil || clientCtx.InterfaceRegistry == nil {
+			return errors.New("TxConfig and InterfaceRegistry are required in client.Context")
+		}
+
+		msg := dynamicpb.NewMessage(input.Descriptor())
+		proto.Merge(msg, input.Interface())
+
+		return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 	})
 
 	if b.AddTxConnFlags != nil {

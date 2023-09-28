@@ -41,7 +41,7 @@ type Builder struct {
 	messageFlagTypes map[protoreflect.FullName]Type
 	scalarFlagTypes  map[string]Type
 
-	// Keyring implementation
+	// Keyring is the keyring to use for client/v2.
 	Keyring keyring.Keyring
 
 	// ClientCtx contains the necessary information needed to execute the commands.
@@ -182,7 +182,7 @@ func (b *Builder) addMessageFlags(ctx context.Context, flagSet *pflag.FlagSet, m
 			commandOptions.FlagOptions = make(map[string]*autocliv1.FlagOptions)
 		}
 
-		commandOptions.FlagOptions[string(signerFieldName)] = &autocliv1.FlagOptions{
+		commandOptions.FlagOptions[signerFieldName] = &autocliv1.FlagOptions{
 			Name:      flags.FlagFrom,
 			Usage:     "Name or address with which to sign the message",
 			Shorthand: "f",

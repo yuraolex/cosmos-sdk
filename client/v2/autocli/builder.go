@@ -29,12 +29,8 @@ type Builder struct {
 // If the Logger is nil, it will be set to a nop logger.
 // If the keyring is nil, it will be set to a no keyring.
 func (b *Builder) ValidateAndComplete() error {
-	if b.ClientCtx == nil {
-		return errors.New("client context is required in builder")
-	}
-
 	if b.ClientCtx.TxConfig == nil || b.ClientCtx.InterfaceRegistry == nil {
-		return errors.New("tx config and interface registry are required in client.Context")
+		return errors.New("tx config and interface registry are required in builder")
 	}
 
 	if b.ClientCtx.AddressCodec == nil {

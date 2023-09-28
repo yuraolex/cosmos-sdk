@@ -40,8 +40,7 @@ type AppOptions struct {
 	Keyring keyring.Keyring `optional:"true"`
 
 	// ClientCtx contains the necessary information needed to execute the commands.
-	// The goal is to remove the reliance on client.Context in the future.
-	ClientCtx *client.Context
+	ClientCtx client.Context
 }
 
 // EnhanceRootCommand enhances the provided root command with autocli AppOptions,

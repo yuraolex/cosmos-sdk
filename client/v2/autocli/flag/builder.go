@@ -45,8 +45,7 @@ type Builder struct {
 	Keyring keyring.Keyring
 
 	// ClientCtx contains the necessary information needed to execute the commands.
-	// The goal is to remove the reliance on client.Context in the future.
-	ClientCtx *client.Context
+	ClientCtx client.Context
 }
 
 func (b *Builder) init() {

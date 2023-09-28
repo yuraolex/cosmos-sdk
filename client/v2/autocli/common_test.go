@@ -68,7 +68,7 @@ func initFixture(t *testing.T) *fixture {
 		Builder: flag.Builder{
 			TypeResolver: protoregistry.GlobalTypes,
 			FileResolver: protoregistry.GlobalFiles,
-			ClientCtx:    &initClientCtx,
+			ClientCtx:    initClientCtx,
 			Keyring:      kr,
 		},
 		GetClientConn: func(*cobra.Command) (grpc.ClientConnInterface, error) {

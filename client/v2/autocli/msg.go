@@ -117,10 +117,6 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 			return err
 		}
 
-		if clientCtx.TxConfig == nil || clientCtx.InterfaceRegistry == nil {
-			return errors.New("TxConfig and InterfaceRegistry are required in client.Context")
-		}
-
 		msg := dynamicpb.NewMessage(input.Descriptor())
 		proto.Merge(msg, input.Interface())
 

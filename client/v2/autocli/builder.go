@@ -8,16 +8,12 @@ import (
 
 	"cosmossdk.io/client/v2/autocli/flag"
 	"cosmossdk.io/client/v2/autocli/keyring"
-	"cosmossdk.io/log"
 )
 
 // Builder manages options for building CLI commands.
 type Builder struct {
 	// flag.Builder embeds the flag builder and its options.
 	flag.Builder
-
-	// Logger is the logger used by the builder.
-	Logger log.Logger
 
 	// GetClientConn specifies how CLI commands will resolve a grpc.ClientConnInterface
 	// from a given context.
@@ -33,12 +29,12 @@ type Builder struct {
 // If the Logger is nil, it will be set to a nop logger.
 // If the keyring is nil, it will be set to a no keyring.
 func (b *Builder) ValidateAndComplete() error {
-	if b.Logger == nil {
-		b.Logger = log.NewNopLogger()
-	}
-
 	if b.ClientCtx == nil {
 		return errors.New("client context is required in builder")
+	}
+
+	if b.ClientCtx.TxConfig == nil || b.ClientCtx.InterfaceRegistry == nil {
+		return errors.New("tx config and interface registry are required in client.Context")
 	}
 
 	if b.ClientCtx.AddressCodec == nil {

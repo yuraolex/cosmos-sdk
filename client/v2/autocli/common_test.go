@@ -47,8 +47,8 @@ func initFixture(t *testing.T) *fixture {
 	clientConn, err := grpc.Dial(listener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NilError(t, err)
 
-	appCodec := moduletestutil.MakeTestEncodingConfig().Codec
-	kr, err := keyring.New(sdk.KeyringServiceName(), keyring.BackendMemory, home, nil, appCodec)
+	encodingConfig := moduletestutil.MakeTestEncodingConfig()
+	kr, err := keyring.New(sdk.KeyringServiceName(), keyring.BackendMemory, home, nil, encodingConfig.Codec)
 	assert.NilError(t, err)
 
 	var initClientCtx client.Context
@@ -59,7 +59,9 @@ func initFixture(t *testing.T) *fixture {
 		WithKeyring(kr).
 		WithKeyringDir(home).
 		WithHomeDir(home).
-		WithViper("")
+		WithViper("").
+		WithInterfaceRegistry(encodingConfig.Codec.InterfaceRegistry()).
+		WithTxConfig(encodingConfig.TxConfig)
 
 	conn := &testClientConn{ClientConn: clientConn}
 	b := &Builder{

@@ -11,8 +11,13 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 )
 
 // BuildMsgCommand builds the msg commands for all the provided modules. If a custom command is provided for a
@@ -106,6 +111,14 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 			return err
 		}
 
+		// enable sign mode textual for all tcs
+		txConfigWithTextual, err := enableSignModeTextual(clientCtx)
+		if err != nil {
+			return err
+		}
+
+		clientCtx = clientCtx.WithTxConfig(txConfigWithTextual)
+
 		cmd.SetContext(context.WithValue(context.Background(), client.ClientContextKey, &clientCtx))
 		if err = client.SetCmdClientContextHandler(clientCtx, cmd); err != nil {
 			return err
@@ -131,4 +144,21 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 	}
 
 	return cmd, err
+}
+
+// enableSignModeTextual enables the sign mode textual for all txs
+func enableSignModeTextual(clientCtx client.Context) (client.TxConfig, error) {
+	txConfigWithTextual, err := authtx.NewTxConfigWithOptions(
+		codec.NewProtoCodec(clientCtx.InterfaceRegistry),
+		authtx.ConfigOptions{
+			EnabledSignModes:           append(authtx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL),
+			TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(clientCtx),
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return txConfigWithTextual, nil
 }

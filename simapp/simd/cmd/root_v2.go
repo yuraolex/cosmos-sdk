@@ -35,6 +35,7 @@ func NewRootCmd() *cobra.Command {
 		autoCliOpts        autocli.AppOptions
 		moduleBasicManager module.BasicManager
 		clientCtx          *client.Context
+		txConfigOpts       tx.ConfigOptions
 	)
 
 	if err := depinject.Inject(
@@ -52,6 +53,7 @@ func NewRootCmd() *cobra.Command {
 		&autoCliOpts,
 		&moduleBasicManager,
 		&clientCtx,
+		&txConfigOpts,
 	); err != nil {
 		panic(err)
 	}
@@ -78,13 +80,9 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			// This needs to go after CreateClientConfig, as that function
-			// sets the RPC client needed for SIGN_MODE_TEXTUAL.
-			enabledSignModes := append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
-			txConfigOpts := tx.ConfigOptions{
-				EnabledSignModes:           enabledSignModes,
-				TextualCoinMetadataQueryFn: txmodule.NewGRPCCoinMetadataQueryFn(initClientCtx),
-			}
+			// This needs to go after CreateClientConfig, as that function sets the RPC client needed for SIGN_MODE_TEXTUAL.
+			txConfigOpts.EnabledSignModes = append(txConfigOpts.EnabledSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
+			txConfigOpts.TextualCoinMetadataQueryFn = txmodule.NewGRPCCoinMetadataQueryFn(initClientCtx)
 			txConfigWithTextual, err := tx.NewTxConfigWithOptions(
 				codec.NewProtoCodec(clientCtx.InterfaceRegistry),
 				txConfigOpts,

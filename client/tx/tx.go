@@ -102,7 +102,7 @@ func BroadcastTx(clientCtx client.Context, txf Factory, msgs ...sdk.Msg) error {
 	if !clientCtx.SkipConfirm {
 		txBytes, err := clientCtx.TxConfig.TxJSONEncoder()(tx.GetTx())
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to encode transaction: %w", err)
 		}
 
 		if err := clientCtx.PrintRaw(json.RawMessage(txBytes)); err != nil {

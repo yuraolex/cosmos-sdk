@@ -143,6 +143,9 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 		cmd.Flags().BoolP(flagNoIndent, "", false, "Do not indent JSON output")
 	}
 
+	// silence usage only for inner txs & queries commands
+	cmd.SilenceUsage = true
+
 	return cmd, nil
 }
 

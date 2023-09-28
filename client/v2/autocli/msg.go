@@ -127,5 +127,8 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 		b.AddTxConnFlags(cmd)
 	}
 
+	// silence usage only for inner txs & queries commands
+	cmd.SilenceUsage = true
+
 	return cmd, err
 }

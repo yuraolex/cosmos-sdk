@@ -14,6 +14,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 )
 
 // BuildMsgCommand builds the msg commands for all the provided modules. If a custom command is provided for a
@@ -116,6 +120,18 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 		if err != nil {
 			return err
 		}
+
+		// enable sign mode textual
+		b.TxConfigOpts.EnabledSignModes = append(b.TxConfigOpts.EnabledSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
+		b.TxConfigOpts.TextualCoinMetadataQueryFn = authtxconfig.NewGRPCCoinMetadataQueryFn(clientCtx)
+		txConfigWithTextual, err := authtx.NewTxConfigWithOptions(
+			codec.NewProtoCodec(clientCtx.InterfaceRegistry),
+			b.TxConfigOpts,
+		)
+		if err != nil {
+			return err
+		}
+		clientCtx = clientCtx.WithTxConfig(txConfigWithTextual)
 
 		msg := dynamicpb.NewMessage(input.Descriptor())
 		proto.Merge(msg, input.Interface())

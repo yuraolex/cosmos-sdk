@@ -14,6 +14,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 )
 
 // AppOptions are autocli options for an app. These options can be built via depinject based on an app config. Ex:
@@ -41,6 +42,9 @@ type AppOptions struct {
 
 	// ClientCtx contains the necessary information needed to execute the commands.
 	ClientCtx client.Context
+
+	// TxConfigOptions is required to support sign mode textual
+	TxConfigOpts tx.ConfigOptions
 }
 
 // EnhanceRootCommand enhances the provided root command with autocli AppOptions,
@@ -65,6 +69,7 @@ func (appOptions AppOptions) EnhanceRootCommand(rootCmd *cobra.Command) error {
 			FileResolver: proto.HybridResolver,
 			ClientCtx:    appOptions.ClientCtx,
 			Keyring:      appOptions.Keyring,
+			TxConfigOpts: appOptions.TxConfigOpts,
 		},
 		GetClientConn: func(cmd *cobra.Command) (grpc.ClientConnInterface, error) {
 			return client.GetClientQueryContext(cmd)

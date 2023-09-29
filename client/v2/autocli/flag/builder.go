@@ -20,6 +20,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 )
 
 // Builder manages options for building pflag flags for protobuf messages.
@@ -46,6 +47,9 @@ type Builder struct {
 
 	// ClientCtx contains the necessary information needed to execute the commands.
 	ClientCtx client.Context
+
+	// TxConfigOptions is required to support sign mode textual
+	TxConfigOpts tx.ConfigOptions
 }
 
 func (b *Builder) init() {

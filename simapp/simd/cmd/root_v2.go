@@ -31,11 +31,10 @@ import (
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
 func NewRootCmd() *cobra.Command {
 	var (
-		appCodec           codec.Codec
+		txConfigOpts       tx.ConfigOptions
 		autoCliOpts        autocli.AppOptions
 		moduleBasicManager module.BasicManager
 		clientCtx          client.Context
-		txConfigOpts       tx.ConfigOptions
 	)
 
 	if err := depinject.Inject(
@@ -49,11 +48,10 @@ func NewRootCmd() *cobra.Command {
 				ProvideKeyring,
 			),
 		),
-		&appCodec,
+		&txConfigOpts,
 		&autoCliOpts,
 		&moduleBasicManager,
 		&clientCtx,
-		&txConfigOpts,
 	); err != nil {
 		panic(err)
 	}
@@ -101,7 +99,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	initRootCmd(rootCmd, clientCtx.TxConfig, clientCtx.InterfaceRegistry, appCodec, moduleBasicManager)
+	initRootCmd(rootCmd, clientCtx.TxConfig, clientCtx.InterfaceRegistry, clientCtx.Codec, moduleBasicManager)
 
 	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
 		panic(err)
@@ -113,17 +111,18 @@ func NewRootCmd() *cobra.Command {
 func ProvideClientContext(
 	appCodec codec.Codec,
 	interfaceRegistry codectypes.InterfaceRegistry,
+	txConfig client.TxConfig,
 	legacyAmino *codec.LegacyAmino,
 	addressCodec address.Codec,
-	txConfig client.TxConfig,
 	validatorAddressCodec runtime.ValidatorAddressCodec,
 	consensusAddressCodec runtime.ConsensusAddressCodec,
 ) client.Context {
 	var err error
 
-	initClientCtx := client.Context{}.
+	clientCtx := client.Context{}.
 		WithCodec(appCodec).
 		WithInterfaceRegistry(interfaceRegistry).
+		WithTxConfig(txConfig).
 		WithLegacyAmino(legacyAmino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
@@ -136,12 +135,12 @@ func ProvideClientContext(
 
 	// Read the config to overwrite the default values with the values from the config file
 	customClientTemplate, customClientConfig := initClientConfig()
-	initClientCtx, err = config.CreateClientConfig(initClientCtx, customClientTemplate, customClientConfig)
+	clientCtx, err = config.CreateClientConfig(clientCtx, customClientTemplate, customClientConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	return initClientCtx
+	return clientCtx
 }
 
 func ProvideKeyring(clientCtx client.Context, addressCodec address.Codec) (clientv2keyring.Keyring, error) {

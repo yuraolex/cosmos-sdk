@@ -61,7 +61,9 @@ func initFixture(t *testing.T) *fixture {
 		WithHomeDir(home).
 		WithViper("").
 		WithInterfaceRegistry(encodingConfig.Codec.InterfaceRegistry()).
-		WithTxConfig(encodingConfig.TxConfig)
+		WithTxConfig(encodingConfig.TxConfig).
+		WithAccountRetriever(client.MockAccountRetriever{}).
+		WithChainID("autocli-test")
 
 	conn := &testClientConn{ClientConn: clientConn}
 	b := &Builder{

@@ -144,7 +144,9 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 	}
 
 	// silence usage only for inner txs & queries commands
-	cmd.SilenceUsage = true
+	if cmd != nil {
+		cmd.SilenceUsage = true
+	}
 
 	return cmd, err
 }

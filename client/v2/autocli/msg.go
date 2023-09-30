@@ -124,6 +124,7 @@ func (b *Builder) BuildMsgMethodCommand(descriptor protoreflect.MethodDescriptor
 		// enable sign mode textual
 		b.TxConfigOpts.EnabledSignModes = append(b.TxConfigOpts.EnabledSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
 		b.TxConfigOpts.TextualCoinMetadataQueryFn = authtxconfig.NewGRPCCoinMetadataQueryFn(clientCtx)
+
 		txConfigWithTextual, err := authtx.NewTxConfigWithOptions(
 			codec.NewProtoCodec(clientCtx.InterfaceRegistry),
 			b.TxConfigOpts,

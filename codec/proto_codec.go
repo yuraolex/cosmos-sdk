@@ -25,7 +25,6 @@ import (
 // binary and JSON encoding.
 type ProtoCodecMarshaler interface {
 	Codec
-	InterfaceRegistry() types.InterfaceRegistry
 }
 
 // ProtoCodec defines a codec that utilizes Protobuf for both binary and JSON

@@ -5,6 +5,8 @@ import (
 
 	"github.com/cosmos/gogoproto/proto"
 
+	protov2 "google.golang.org/protobuf/proto"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	txtypes "github.com/cosmos/cosmos-sdk/types/tx"
@@ -33,7 +35,18 @@ func DefaultJSONTxEncoder(cdc codec.ProtoCodecMarshaler) sdk.TxEncoder {
 	return func(tx sdk.Tx) ([]byte, error) {
 		txWrapper, ok := tx.(*wrapper)
 		if ok {
-			return cdc.MarshalJSON(txWrapper.tx)
+			fmt.Println("txWrapper.tx.GetMsgs()", txWrapper.tx.GetMsgs())
+			v2Tx := txWrapper.GetProtoTxV2()
+			bz := cdc.MustMarshal(txWrapper.tx)
+			err := protov2.Unmarshal(bz, v2Tx)
+			if err != nil {
+				return nil, err
+			}
+
+			bz, err = cdc.MarshalJSON(v2Tx)
+			fmt.Println(string(bz))
+
+			return bz, err
 		}
 
 		return nil, fmt.Errorf("expected %T, got %T", &wrapper{}, tx)

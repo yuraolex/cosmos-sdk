@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"fmt"
 
+	txv1beta1 "cosmossdk.io/api/cosmos/tx/v1beta1"
+	"github.com/cosmos/cosmos-proto/anyutil"
 	"github.com/cosmos/gogoproto/proto"
 	protov2 "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -399,6 +402,29 @@ func (w *wrapper) setSignatureAtIndex(index int, sig []byte) {
 
 func (w *wrapper) GetTx() authsigning.Tx {
 	return w
+}
+
+func (w *wrapper) GetProtoTxV2() *txv1beta1.Tx {
+	err := w.initSignersAndMsgsV2()
+	if err != nil {
+		panic(err)
+	}
+	anyMsgs := make([]*anypb.Any, len(w.msgsV2))
+	for i, msg := range w.msgsV2 {
+		anyMsgs[i], err = anyutil.New(msg)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return &txv1beta1.Tx{
+		Body: &txv1beta1.TxBody{
+			Messages:                    anyMsgs,
+			Memo:                        "",
+			TimeoutHeight:               0,
+			ExtensionOptions:            nil,
+			NonCriticalExtensionOptions: nil,
+		},
+	}
 }
 
 func (w *wrapper) GetProtoTx() *tx.Tx {

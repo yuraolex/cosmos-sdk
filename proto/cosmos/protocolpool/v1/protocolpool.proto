@@ -8,19 +8,19 @@ import "cosmos_proto/cosmos.proto";
 
 message MsgSetBudget {
   string proposer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  Budget budget = 2;
+  Budget budget   = 2;
 }
-  
+
 message Budget {
   repeated BudgetItem items = 1;
 }
-  
+
 message BudgetItem {
-  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string weight = 2 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string             address              = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string             weight               = 2 [(cosmos_proto.scalar) = "cosmos.Dec"];
   ProtocolPoolConfig protocol_pool_config = 3;
 }
-  
+
 message ProtocolPoolConfig {
   map<string, string> address_percentage = 1;
 }

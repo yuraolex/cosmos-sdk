@@ -4,6 +4,7 @@ package cosmos.protocolpool.v1;
 
 option go_package = "cosmossdk.io/x/protocolpool/types";
 
+import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 
 message MsgSetBudget {
@@ -16,9 +17,9 @@ message Budget {
 }
 
 message BudgetItem {
-  string             address              = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string             weight               = 2 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string weight  = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false
   ];

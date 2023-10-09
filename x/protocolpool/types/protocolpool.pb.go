@@ -122,9 +122,9 @@ func (m *Budget) GetItems() []*BudgetItem {
 }
 
 type BudgetItem struct {
-	Address            string                      `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Weight             cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=weight,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"weight"`
-	ProtocolPoolConfig *ProtocolPoolConfig         `protobuf:"bytes,3,opt,name=protocol_pool_config,json=protocolPoolConfig,proto3" json:"protocol_pool_config,omitempty"`
+	Address            string              `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Weight             *LegacyDec          `protobuf:"bytes,2,opt,name=weight,proto3" json:"weight,omitempty"`
+	ProtocolPoolConfig *ProtocolPoolConfig `protobuf:"bytes,3,opt,name=protocol_pool_config,json=protocolPoolConfig,proto3" json:"protocol_pool_config,omitempty"`
 }
 
 func (m *BudgetItem) Reset()         { *m = BudgetItem{} }
@@ -167,6 +167,13 @@ func (m *BudgetItem) GetAddress() string {
 	return ""
 }
 
+func (m *BudgetItem) GetWeight() *LegacyDec {
+	if m != nil {
+		return m.Weight
+	}
+	return nil
+}
+
 func (m *BudgetItem) GetProtocolPoolConfig() *ProtocolPoolConfig {
 	if m != nil {
 		return m.ProtocolPoolConfig
@@ -174,15 +181,52 @@ func (m *BudgetItem) GetProtocolPoolConfig() *ProtocolPoolConfig {
 	return nil
 }
 
+type LegacyDec struct {
+	Value cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=value,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"value"`
+}
+
+func (m *LegacyDec) Reset()         { *m = LegacyDec{} }
+func (m *LegacyDec) String() string { return proto.CompactTextString(m) }
+func (*LegacyDec) ProtoMessage()    {}
+func (*LegacyDec) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b291839d0a414c0a, []int{3}
+}
+func (m *LegacyDec) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LegacyDec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LegacyDec.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LegacyDec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LegacyDec.Merge(m, src)
+}
+func (m *LegacyDec) XXX_Size() int {
+	return m.Size()
+}
+func (m *LegacyDec) XXX_DiscardUnknown() {
+	xxx_messageInfo_LegacyDec.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LegacyDec proto.InternalMessageInfo
+
 type ProtocolPoolConfig struct {
-	AddressPercentage map[string]string `protobuf:"bytes,1,rep,name=address_percentage,json=addressPercentage,proto3" json:"address_percentage,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AddressPercentage map[string]*LegacyDec `protobuf:"bytes,1,rep,name=address_percentage,json=addressPercentage,proto3" json:"address_percentage,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (m *ProtocolPoolConfig) Reset()         { *m = ProtocolPoolConfig{} }
 func (m *ProtocolPoolConfig) String() string { return proto.CompactTextString(m) }
 func (*ProtocolPoolConfig) ProtoMessage()    {}
 func (*ProtocolPoolConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b291839d0a414c0a, []int{3}
+	return fileDescriptor_b291839d0a414c0a, []int{4}
 }
 func (m *ProtocolPoolConfig) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -211,7 +255,7 @@ func (m *ProtocolPoolConfig) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ProtocolPoolConfig proto.InternalMessageInfo
 
-func (m *ProtocolPoolConfig) GetAddressPercentage() map[string]string {
+func (m *ProtocolPoolConfig) GetAddressPercentage() map[string]*LegacyDec {
 	if m != nil {
 		return m.AddressPercentage
 	}
@@ -222,8 +266,9 @@ func init() {
 	proto.RegisterType((*MsgSetBudget)(nil), "cosmos.protocolpool.v1.MsgSetBudget")
 	proto.RegisterType((*Budget)(nil), "cosmos.protocolpool.v1.Budget")
 	proto.RegisterType((*BudgetItem)(nil), "cosmos.protocolpool.v1.BudgetItem")
+	proto.RegisterType((*LegacyDec)(nil), "cosmos.protocolpool.v1.LegacyDec")
 	proto.RegisterType((*ProtocolPoolConfig)(nil), "cosmos.protocolpool.v1.ProtocolPoolConfig")
-	proto.RegisterMapType((map[string]string)(nil), "cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry")
+	proto.RegisterMapType((map[string]*LegacyDec)(nil), "cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry")
 }
 
 func init() {
@@ -231,35 +276,36 @@ func init() {
 }
 
 var fileDescriptor_b291839d0a414c0a = []byte{
-	// 436 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0x41, 0x6b, 0x13, 0x41,
-	0x14, 0xce, 0x34, 0x34, 0xda, 0x57, 0x0f, 0x3a, 0x84, 0xb2, 0x46, 0xd8, 0xc6, 0x3d, 0x45, 0xa1,
-	0x1b, 0x12, 0x45, 0x8a, 0x9e, 0xba, 0xc6, 0x43, 0x41, 0x21, 0x4c, 0x6f, 0x22, 0x84, 0xed, 0xee,
-	0x73, 0xba, 0x74, 0x77, 0x67, 0xd8, 0x99, 0x46, 0x17, 0xfc, 0x11, 0xfe, 0x98, 0xfe, 0x88, 0x1e,
-	0x3c, 0x94, 0x9e, 0xc4, 0x43, 0x91, 0xe4, 0xe4, 0xbf, 0x90, 0xec, 0x4c, 0xaa, 0x6b, 0xa3, 0xf6,
-	0x36, 0xef, 0x7b, 0xdf, 0xf7, 0xde, 0xf7, 0x3e, 0x18, 0x78, 0x14, 0x09, 0x95, 0x09, 0xd5, 0x97,
-	0x85, 0xd0, 0x22, 0x12, 0xa9, 0x14, 0x22, 0xed, 0x4f, 0x07, 0xb5, 0xda, 0xaf, 0x0a, 0xba, 0x65,
-	0xa8, 0x7e, 0xad, 0x35, 0x1d, 0x74, 0xda, 0x5c, 0x70, 0x51, 0x81, 0xfd, 0xc5, 0xcb, 0xf4, 0x3b,
-	0xf7, 0x0d, 0x7b, 0x62, 0x1a, 0xbf, 0x4b, 0xbd, 0x4f, 0x70, 0xe7, 0x8d, 0xe2, 0x07, 0xa8, 0x83,
-	0x93, 0x98, 0xa3, 0xa6, 0x4f, 0xe1, 0xb6, 0x2c, 0x84, 0x14, 0x0a, 0x0b, 0x87, 0x74, 0x49, 0x6f,
-	0x23, 0x70, 0x2e, 0x4e, 0x77, 0xda, 0x56, 0xb3, 0x17, 0xc7, 0x05, 0x2a, 0x75, 0xa0, 0x8b, 0x24,
-	0xe7, 0xec, 0x8a, 0x49, 0x9f, 0x41, 0xeb, 0xb0, 0xd2, 0x3b, 0x6b, 0x5d, 0xd2, 0xdb, 0x1c, 0xba,
-	0xfe, 0x6a, 0x7f, 0xbe, 0xd9, 0xc2, 0x2c, 0xdb, 0x0b, 0xa0, 0x65, 0xf7, 0xee, 0xc2, 0x7a, 0xa2,
-	0x31, 0x53, 0x0e, 0xe9, 0x36, 0x7b, 0x9b, 0x43, 0xef, 0xdf, 0x03, 0xf6, 0x35, 0x66, 0xcc, 0x08,
-	0xbc, 0x1f, 0x04, 0xe0, 0x17, 0x4a, 0x87, 0x70, 0x2b, 0x34, 0x2e, 0xff, 0xeb, 0x7f, 0x49, 0xa4,
-	0xfb, 0xd0, 0xfa, 0x80, 0x09, 0x3f, 0x32, 0xf6, 0x37, 0x82, 0xc1, 0xd9, 0xe5, 0x76, 0xe3, 0xdb,
-	0xe5, 0xf6, 0x03, 0x23, 0x53, 0xf1, 0xb1, 0x9f, 0x88, 0x7e, 0x16, 0xea, 0x23, 0xff, 0x35, 0xf2,
-	0x30, 0x2a, 0x47, 0x18, 0x5d, 0x9c, 0xee, 0x80, 0x9d, 0x3a, 0xc2, 0x88, 0xd9, 0x01, 0xf4, 0x1d,
-	0xb4, 0x97, 0x96, 0x27, 0x0b, 0xcf, 0x93, 0x48, 0xe4, 0xef, 0x13, 0xee, 0x34, 0xab, 0x5c, 0x1e,
-	0xff, 0xed, 0xac, 0xb1, 0xad, 0xc7, 0x42, 0xa4, 0x2f, 0x2b, 0x05, 0xa3, 0xf2, 0x1a, 0xe6, 0x7d,
-	0x21, 0x40, 0xaf, 0x53, 0xa9, 0x04, 0x6a, 0x4f, 0x99, 0x48, 0x2c, 0x22, 0xcc, 0x75, 0xc8, 0xd1,
-	0x26, 0xb9, 0x77, 0xf3, 0x95, 0xcb, 0x78, 0xc6, 0x57, 0x33, 0x5e, 0xe5, 0xba, 0x28, 0xd9, 0xbd,
-	0xf0, 0x4f, 0xbc, 0x33, 0x82, 0xad, 0xd5, 0x64, 0x7a, 0x17, 0x9a, 0xc7, 0x58, 0x9a, 0xec, 0xd9,
-	0xe2, 0x49, 0xdb, 0xb0, 0x3e, 0x0d, 0xd3, 0x13, 0x34, 0xe1, 0x32, 0x53, 0x3c, 0x5f, 0xdb, 0x25,
-	0xc1, 0x8b, 0xb3, 0x99, 0x4b, 0xce, 0x67, 0x2e, 0xf9, 0x3e, 0x73, 0xc9, 0xe7, 0xb9, 0xdb, 0x38,
-	0x9f, 0xbb, 0x8d, 0xaf, 0x73, 0xb7, 0xf1, 0xf6, 0x61, 0x2d, 0xf9, 0x8f, 0xf5, 0x2f, 0xa1, 0x4b,
-	0x89, 0xea, 0xb0, 0x55, 0x61, 0x4f, 0x7e, 0x06, 0x00, 0x00, 0xff, 0xff, 0x83, 0x40, 0x7e, 0xd3,
-	0x36, 0x03, 0x00, 0x00,
+	// 452 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0xd1, 0x6a, 0xd4, 0x40,
+	0x14, 0xdd, 0xe9, 0xd2, 0x68, 0x6f, 0x7d, 0xd0, 0x61, 0x29, 0x71, 0x85, 0x74, 0x9b, 0xa7, 0x55,
+	0x68, 0xc2, 0xae, 0xa2, 0x55, 0x9f, 0x1a, 0x15, 0x11, 0x14, 0x96, 0xd4, 0x27, 0x11, 0x42, 0x9a,
+	0x8c, 0xd3, 0xd0, 0x24, 0x33, 0x64, 0xa6, 0xab, 0x01, 0x3f, 0xc2, 0x8f, 0xe9, 0x47, 0xf4, 0xb1,
+	0xf4, 0x49, 0x7d, 0x28, 0xb2, 0xfb, 0x01, 0xfe, 0x82, 0x24, 0x33, 0xd9, 0x1a, 0xdb, 0xda, 0xbe,
+	0xe5, 0x9e, 0x7b, 0xce, 0x3d, 0xe7, 0xde, 0x21, 0x70, 0x3f, 0x62, 0x22, 0x63, 0xc2, 0xe5, 0x05,
+	0x93, 0x2c, 0x62, 0x29, 0x67, 0x2c, 0x75, 0xa7, 0xa3, 0x56, 0xed, 0xd4, 0x05, 0x5e, 0x53, 0x54,
+	0xa7, 0xd5, 0x9a, 0x8e, 0xfa, 0x3d, 0xca, 0x28, 0xab, 0x41, 0xb7, 0xfa, 0x52, 0xfd, 0xfe, 0x5d,
+	0xc5, 0x0e, 0x54, 0xe3, 0x6f, 0xa9, 0xfd, 0x15, 0x6e, 0xbd, 0x13, 0x74, 0x87, 0x48, 0xef, 0x20,
+	0xa6, 0x44, 0xe2, 0x47, 0x70, 0x93, 0x17, 0x8c, 0x33, 0x41, 0x0a, 0x13, 0x0d, 0xd0, 0x70, 0xc5,
+	0x33, 0x4f, 0x0e, 0x37, 0x7b, 0x5a, 0xb3, 0x1d, 0xc7, 0x05, 0x11, 0x62, 0x47, 0x16, 0x49, 0x4e,
+	0xfd, 0x05, 0x13, 0x3f, 0x06, 0x63, 0xb7, 0xd6, 0x9b, 0x4b, 0x03, 0x34, 0x5c, 0x1d, 0x5b, 0xce,
+	0xc5, 0xf9, 0x1c, 0xe5, 0xe2, 0x6b, 0xb6, 0xed, 0x81, 0xa1, 0x7d, 0xb7, 0x60, 0x39, 0x91, 0x24,
+	0x13, 0x26, 0x1a, 0x74, 0x87, 0xab, 0x63, 0xfb, 0xff, 0x03, 0xde, 0x48, 0x92, 0xf9, 0x4a, 0x60,
+	0xff, 0x40, 0x00, 0x67, 0x28, 0x1e, 0xc3, 0x8d, 0x50, 0xa5, 0xbc, 0x32, 0x7f, 0x43, 0xc4, 0x4f,
+	0xc1, 0xf8, 0x4c, 0x12, 0xba, 0xd7, 0xc4, 0xdf, 0xb8, 0xcc, 0xfd, 0x2d, 0xa1, 0x61, 0x54, 0xbe,
+	0x24, 0x91, 0xaf, 0x05, 0xf8, 0x23, 0xf4, 0x1a, 0x52, 0x50, 0xb1, 0x82, 0x88, 0xe5, 0x9f, 0x12,
+	0x6a, 0x76, 0xeb, 0x41, 0x0f, 0x2e, 0x1b, 0x34, 0xd1, 0xf5, 0x84, 0xb1, 0xf4, 0x45, 0xad, 0xf0,
+	0x31, 0x3f, 0x87, 0xd9, 0xef, 0x61, 0x65, 0x61, 0x89, 0x5f, 0xc3, 0xf2, 0x34, 0x4c, 0x0f, 0x88,
+	0xde, 0x6b, 0x74, 0x74, 0xba, 0xde, 0xf9, 0x79, 0xba, 0x7e, 0x4f, 0x59, 0x88, 0x78, 0xdf, 0x49,
+	0x98, 0x9b, 0x85, 0x72, 0xef, 0x2c, 0xe6, 0xc9, 0xe1, 0x26, 0xe8, 0x04, 0x55, 0x68, 0xa5, 0xb7,
+	0x7f, 0x23, 0xc0, 0xe7, 0x03, 0x60, 0x0e, 0x58, 0x1f, 0x24, 0xe0, 0xa4, 0x88, 0x48, 0x2e, 0x43,
+	0x4a, 0xf4, 0x7b, 0x6c, 0x5f, 0x7f, 0x91, 0xe6, 0xc8, 0x93, 0xc5, 0x8c, 0x57, 0xb9, 0x2c, 0x4a,
+	0xff, 0x4e, 0xf8, 0x2f, 0xde, 0xa7, 0xb0, 0x76, 0x31, 0x19, 0xdf, 0x86, 0xee, 0x3e, 0x29, 0xd5,
+	0xa6, 0x7e, 0xf5, 0x89, 0x9f, 0x34, 0xdb, 0x5f, 0xfb, 0x89, 0x14, 0xff, 0xd9, 0xd2, 0x16, 0xf2,
+	0x9e, 0x1f, 0xcd, 0x2c, 0x74, 0x3c, 0xb3, 0xd0, 0xaf, 0x99, 0x85, 0xbe, 0xcd, 0xad, 0xce, 0xf1,
+	0xdc, 0xea, 0x7c, 0x9f, 0x5b, 0x9d, 0x0f, 0x1b, 0xad, 0xeb, 0x7d, 0x69, 0xff, 0x7b, 0xb2, 0xe4,
+	0x44, 0xec, 0x1a, 0x35, 0xf6, 0xf0, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xf9, 0x85, 0x23, 0x0d,
+	0x9f, 0x03, 0x00, 0x00,
 }
 
 func (m *MsgSetBudget) Marshal() (dAtA []byte, err error) {
@@ -373,16 +419,18 @@ func (m *BudgetItem) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	{
-		size := m.Weight.Size()
-		i -= size
-		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.Weight != nil {
+		{
+			size, err := m.Weight.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintProtocolpool(dAtA, i, uint64(size))
 		}
-		i = encodeVarintProtocolpool(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
 	}
-	i--
-	dAtA[i] = 0x12
 	if len(m.Address) > 0 {
 		i -= len(m.Address)
 		copy(dAtA[i:], m.Address)
@@ -390,6 +438,39 @@ func (m *BudgetItem) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LegacyDec) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LegacyDec) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LegacyDec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Value.Size()
+		i -= size
+		if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintProtocolpool(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -417,11 +498,18 @@ func (m *ProtocolPoolConfig) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		for k := range m.AddressPercentage {
 			v := m.AddressPercentage[k]
 			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarintProtocolpool(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
+			if v != nil {
+				{
+					size, err := v.MarshalToSizedBuffer(dAtA[:i])
+					if err != nil {
+						return 0, err
+					}
+					i -= size
+					i = encodeVarintProtocolpool(dAtA, i, uint64(size))
+				}
+				i--
+				dAtA[i] = 0x12
+			}
 			i -= len(k)
 			copy(dAtA[i:], k)
 			i = encodeVarintProtocolpool(dAtA, i, uint64(len(k)))
@@ -488,12 +576,25 @@ func (m *BudgetItem) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovProtocolpool(uint64(l))
 	}
-	l = m.Weight.Size()
-	n += 1 + l + sovProtocolpool(uint64(l))
+	if m.Weight != nil {
+		l = m.Weight.Size()
+		n += 1 + l + sovProtocolpool(uint64(l))
+	}
 	if m.ProtocolPoolConfig != nil {
 		l = m.ProtocolPoolConfig.Size()
 		n += 1 + l + sovProtocolpool(uint64(l))
 	}
+	return n
+}
+
+func (m *LegacyDec) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Value.Size()
+	n += 1 + l + sovProtocolpool(uint64(l))
 	return n
 }
 
@@ -507,7 +608,12 @@ func (m *ProtocolPoolConfig) Size() (n int) {
 		for k, v := range m.AddressPercentage {
 			_ = k
 			_ = v
-			mapEntrySize := 1 + len(k) + sovProtocolpool(uint64(len(k))) + 1 + len(v) + sovProtocolpool(uint64(len(v)))
+			l = 0
+			if v != nil {
+				l = v.Size()
+				l += 1 + sovProtocolpool(uint64(l))
+			}
+			mapEntrySize := 1 + len(k) + sovProtocolpool(uint64(len(k))) + l
 			n += mapEntrySize + 1 + sovProtocolpool(uint64(mapEntrySize))
 		}
 	}
@@ -787,7 +893,7 @@ func (m *BudgetItem) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowProtocolpool
@@ -797,21 +903,23 @@ func (m *BudgetItem) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthProtocolpool
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthProtocolpool
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
+			}
+			if m.Weight == nil {
+				m.Weight = &LegacyDec{}
 			}
 			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -850,6 +958,90 @@ func (m *BudgetItem) Unmarshal(dAtA []byte) error {
 				m.ProtocolPoolConfig = &ProtocolPoolConfig{}
 			}
 			if err := m.ProtocolPoolConfig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipProtocolpool(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthProtocolpool
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LegacyDec) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowProtocolpool
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LegacyDec: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LegacyDec: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowProtocolpool
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthProtocolpool
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthProtocolpool
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -933,10 +1125,10 @@ func (m *ProtocolPoolConfig) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.AddressPercentage == nil {
-				m.AddressPercentage = make(map[string]string)
+				m.AddressPercentage = make(map[string]*LegacyDec)
 			}
 			var mapkey string
-			var mapvalue string
+			var mapvalue *LegacyDec
 			for iNdEx < postIndex {
 				entryPreIndex := iNdEx
 				var wire uint64
@@ -985,7 +1177,7 @@ func (m *ProtocolPoolConfig) Unmarshal(dAtA []byte) error {
 					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
 					iNdEx = postStringIndexmapkey
 				} else if fieldNum == 2 {
-					var stringLenmapvalue uint64
+					var mapmsglen int
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowProtocolpool
@@ -995,24 +1187,26 @@ func (m *ProtocolPoolConfig) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						stringLenmapvalue |= uint64(b&0x7F) << shift
+						mapmsglen |= int(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
 					}
-					intStringLenmapvalue := int(stringLenmapvalue)
-					if intStringLenmapvalue < 0 {
+					if mapmsglen < 0 {
 						return ErrInvalidLengthProtocolpool
 					}
-					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-					if postStringIndexmapvalue < 0 {
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
 						return ErrInvalidLengthProtocolpool
 					}
-					if postStringIndexmapvalue > l {
+					if postmsgIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-					iNdEx = postStringIndexmapvalue
+					mapvalue = &LegacyDec{}
+					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
 				} else {
 					iNdEx = entryPreIndex
 					skippy, err := skipProtocolpool(dAtA[iNdEx:])

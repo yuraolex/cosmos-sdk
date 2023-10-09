@@ -1094,8 +1094,8 @@ func (x *fastReflection_BudgetItem) Range(f func(protoreflect.FieldDescriptor, p
 			return
 		}
 	}
-	if x.Weight != "" {
-		value := protoreflect.ValueOfString(x.Weight)
+	if x.Weight != nil {
+		value := protoreflect.ValueOfMessage(x.Weight.ProtoReflect())
 		if !f(fd_BudgetItem_weight, value) {
 			return
 		}
@@ -1124,7 +1124,7 @@ func (x *fastReflection_BudgetItem) Has(fd protoreflect.FieldDescriptor) bool {
 	case "cosmos.protocolpool.v1.BudgetItem.address":
 		return x.Address != ""
 	case "cosmos.protocolpool.v1.BudgetItem.weight":
-		return x.Weight != ""
+		return x.Weight != nil
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		return x.ProtocolPoolConfig != nil
 	default:
@@ -1146,7 +1146,7 @@ func (x *fastReflection_BudgetItem) Clear(fd protoreflect.FieldDescriptor) {
 	case "cosmos.protocolpool.v1.BudgetItem.address":
 		x.Address = ""
 	case "cosmos.protocolpool.v1.BudgetItem.weight":
-		x.Weight = ""
+		x.Weight = nil
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		x.ProtocolPoolConfig = nil
 	default:
@@ -1170,7 +1170,7 @@ func (x *fastReflection_BudgetItem) Get(descriptor protoreflect.FieldDescriptor)
 		return protoreflect.ValueOfString(value)
 	case "cosmos.protocolpool.v1.BudgetItem.weight":
 		value := x.Weight
-		return protoreflect.ValueOfString(value)
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		value := x.ProtocolPoolConfig
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
@@ -1197,7 +1197,7 @@ func (x *fastReflection_BudgetItem) Set(fd protoreflect.FieldDescriptor, value p
 	case "cosmos.protocolpool.v1.BudgetItem.address":
 		x.Address = value.Interface().(string)
 	case "cosmos.protocolpool.v1.BudgetItem.weight":
-		x.Weight = value.Interface().(string)
+		x.Weight = value.Message().Interface().(*LegacyDec)
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		x.ProtocolPoolConfig = value.Message().Interface().(*ProtocolPoolConfig)
 	default:
@@ -1220,6 +1220,11 @@ func (x *fastReflection_BudgetItem) Set(fd protoreflect.FieldDescriptor, value p
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_BudgetItem) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.BudgetItem.weight":
+		if x.Weight == nil {
+			x.Weight = new(LegacyDec)
+		}
+		return protoreflect.ValueOfMessage(x.Weight.ProtoReflect())
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		if x.ProtocolPoolConfig == nil {
 			x.ProtocolPoolConfig = new(ProtocolPoolConfig)
@@ -1227,8 +1232,6 @@ func (x *fastReflection_BudgetItem) Mutable(fd protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfMessage(x.ProtocolPoolConfig.ProtoReflect())
 	case "cosmos.protocolpool.v1.BudgetItem.address":
 		panic(fmt.Errorf("field address of message cosmos.protocolpool.v1.BudgetItem is not mutable"))
-	case "cosmos.protocolpool.v1.BudgetItem.weight":
-		panic(fmt.Errorf("field weight of message cosmos.protocolpool.v1.BudgetItem is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.BudgetItem"))
@@ -1245,7 +1248,8 @@ func (x *fastReflection_BudgetItem) NewField(fd protoreflect.FieldDescriptor) pr
 	case "cosmos.protocolpool.v1.BudgetItem.address":
 		return protoreflect.ValueOfString("")
 	case "cosmos.protocolpool.v1.BudgetItem.weight":
-		return protoreflect.ValueOfString("")
+		m := new(LegacyDec)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "cosmos.protocolpool.v1.BudgetItem.protocol_pool_config":
 		m := new(ProtocolPoolConfig)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
@@ -1322,8 +1326,8 @@ func (x *fastReflection_BudgetItem) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.Weight)
-		if l > 0 {
+		if x.Weight != nil {
+			l = options.Size(x.Weight)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.ProtocolPoolConfig != nil {
@@ -1373,10 +1377,17 @@ func (x *fastReflection_BudgetItem) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x1a
 		}
-		if len(x.Weight) > 0 {
-			i -= len(x.Weight)
-			copy(dAtA[i:], x.Weight)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Weight)))
+		if x.Weight != nil {
+			encoded, err := options.Marshal(x.Weight)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 			i--
 			dAtA[i] = 0x12
 		}
@@ -1472,7 +1483,7 @@ func (x *fastReflection_BudgetItem) ProtoMethods() *protoiface.Methods {
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
 				}
-				var stringLen uint64
+				var msglen int
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1482,23 +1493,27 @@ func (x *fastReflection_BudgetItem) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
+					msglen |= int(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
+				if msglen < 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 				}
-				postIndex := iNdEx + intStringLen
+				postIndex := iNdEx + msglen
 				if postIndex < 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 				}
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Weight = string(dAtA[iNdEx:postIndex])
+				if x.Weight == nil {
+					x.Weight = &LegacyDec{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Weight); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
@@ -1571,10 +1586,430 @@ func (x *fastReflection_BudgetItem) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var (
+	md_LegacyDec       protoreflect.MessageDescriptor
+	fd_LegacyDec_value protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_cosmos_protocolpool_v1_protocolpool_proto_init()
+	md_LegacyDec = File_cosmos_protocolpool_v1_protocolpool_proto.Messages().ByName("LegacyDec")
+	fd_LegacyDec_value = md_LegacyDec.Fields().ByName("value")
+}
+
+var _ protoreflect.Message = (*fastReflection_LegacyDec)(nil)
+
+type fastReflection_LegacyDec LegacyDec
+
+func (x *LegacyDec) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_LegacyDec)(x)
+}
+
+func (x *LegacyDec) slowProtoReflect() protoreflect.Message {
+	mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_LegacyDec_messageType fastReflection_LegacyDec_messageType
+var _ protoreflect.MessageType = fastReflection_LegacyDec_messageType{}
+
+type fastReflection_LegacyDec_messageType struct{}
+
+func (x fastReflection_LegacyDec_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_LegacyDec)(nil)
+}
+func (x fastReflection_LegacyDec_messageType) New() protoreflect.Message {
+	return new(fastReflection_LegacyDec)
+}
+func (x fastReflection_LegacyDec_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_LegacyDec
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_LegacyDec) Descriptor() protoreflect.MessageDescriptor {
+	return md_LegacyDec
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_LegacyDec) Type() protoreflect.MessageType {
+	return _fastReflection_LegacyDec_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_LegacyDec) New() protoreflect.Message {
+	return new(fastReflection_LegacyDec)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_LegacyDec) Interface() protoreflect.ProtoMessage {
+	return (*LegacyDec)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_LegacyDec) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Value != "" {
+		value := protoreflect.ValueOfString(x.Value)
+		if !f(fd_LegacyDec_value, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_LegacyDec) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		return x.Value != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_LegacyDec) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		x.Value = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_LegacyDec) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		value := x.Value
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_LegacyDec) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		x.Value = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_LegacyDec) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		panic(fmt.Errorf("field value of message cosmos.protocolpool.v1.LegacyDec is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_LegacyDec) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "cosmos.protocolpool.v1.LegacyDec.value":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: cosmos.protocolpool.v1.LegacyDec"))
+		}
+		panic(fmt.Errorf("message cosmos.protocolpool.v1.LegacyDec does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_LegacyDec) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in cosmos.protocolpool.v1.LegacyDec", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_LegacyDec) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_LegacyDec) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_LegacyDec) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_LegacyDec) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*LegacyDec)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Value)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*LegacyDec)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Value) > 0 {
+			i -= len(x.Value)
+			copy(dAtA[i:], x.Value)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Value)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*LegacyDec)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: LegacyDec: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: LegacyDec: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Value = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 var _ protoreflect.Map = (*_ProtocolPoolConfig_1_map)(nil)
 
 type _ProtocolPoolConfig_1_map struct {
-	m *map[string]string
+	m *map[string]*LegacyDec
 }
 
 func (x *_ProtocolPoolConfig_1_map) Len() int {
@@ -1590,7 +2025,7 @@ func (x *_ProtocolPoolConfig_1_map) Range(f func(protoreflect.MapKey, protorefle
 	}
 	for k, v := range *x.m {
 		mapKey := (protoreflect.MapKey)(protoreflect.ValueOfString(k))
-		mapValue := protoreflect.ValueOfString(v)
+		mapValue := protoreflect.ValueOfMessage(v.ProtoReflect())
 		if !f(mapKey, mapValue) {
 			break
 		}
@@ -1626,7 +2061,7 @@ func (x *_ProtocolPoolConfig_1_map) Get(key protoreflect.MapKey) protoreflect.Va
 	if !ok {
 		return protoreflect.Value{}
 	}
-	return protoreflect.ValueOfString(v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
 func (x *_ProtocolPoolConfig_1_map) Set(key protoreflect.MapKey, value protoreflect.Value) {
@@ -1635,18 +2070,26 @@ func (x *_ProtocolPoolConfig_1_map) Set(key protoreflect.MapKey, value protorefl
 	}
 	keyUnwrapped := key.String()
 	concreteKey := keyUnwrapped
-	valueUnwrapped := value.String()
-	concreteValue := valueUnwrapped
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*LegacyDec)
 	(*x.m)[concreteKey] = concreteValue
 }
 
 func (x *_ProtocolPoolConfig_1_map) Mutable(key protoreflect.MapKey) protoreflect.Value {
-	panic("should not call Mutable on protoreflect.Map whose value is not of type protoreflect.Message")
+	keyUnwrapped := key.String()
+	concreteKey := keyUnwrapped
+	v, ok := (*x.m)[concreteKey]
+	if ok {
+		return protoreflect.ValueOfMessage(v.ProtoReflect())
+	}
+	newValue := new(LegacyDec)
+	(*x.m)[concreteKey] = newValue
+	return protoreflect.ValueOfMessage(newValue.ProtoReflect())
 }
 
 func (x *_ProtocolPoolConfig_1_map) NewValue() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	v := new(LegacyDec)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
 func (x *_ProtocolPoolConfig_1_map) IsValid() bool {
@@ -1673,7 +2116,7 @@ func (x *ProtocolPoolConfig) ProtoReflect() protoreflect.Message {
 }
 
 func (x *ProtocolPoolConfig) slowProtoReflect() protoreflect.Message {
-	mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[3]
+	mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1838,7 +2281,7 @@ func (x *fastReflection_ProtocolPoolConfig) Mutable(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	case "cosmos.protocolpool.v1.ProtocolPoolConfig.address_percentage":
 		if x.AddressPercentage == nil {
-			x.AddressPercentage = make(map[string]string)
+			x.AddressPercentage = make(map[string]*LegacyDec)
 		}
 		value := &_ProtocolPoolConfig_1_map{m: &x.AddressPercentage}
 		return protoreflect.ValueOfMap(value)
@@ -1856,7 +2299,7 @@ func (x *fastReflection_ProtocolPoolConfig) Mutable(fd protoreflect.FieldDescrip
 func (x *fastReflection_ProtocolPoolConfig) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "cosmos.protocolpool.v1.ProtocolPoolConfig.address_percentage":
-		m := make(map[string]string)
+		m := make(map[string]*LegacyDec)
 		return protoreflect.ValueOfMap(&_ProtocolPoolConfig_1_map{m: &m})
 	default:
 		if fd.IsExtension() {
@@ -1928,8 +2371,13 @@ func (x *fastReflection_ProtocolPoolConfig) ProtoMethods() *protoiface.Methods {
 		var l int
 		_ = l
 		if len(x.AddressPercentage) > 0 {
-			SiZeMaP := func(k string, v string) {
-				mapEntrySize := 1 + len(k) + runtime.Sov(uint64(len(k))) + 1 + len(v) + runtime.Sov(uint64(len(v)))
+			SiZeMaP := func(k string, v *LegacyDec) {
+				l := 0
+				if v != nil {
+					l = options.Size(v)
+				}
+				l += 1 + runtime.Sov(uint64(l))
+				mapEntrySize := 1 + len(k) + runtime.Sov(uint64(len(k))) + l
 				n += mapEntrySize + 1 + runtime.Sov(uint64(mapEntrySize))
 			}
 			if options.Deterministic {
@@ -1978,11 +2426,18 @@ func (x *fastReflection_ProtocolPoolConfig) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.unknownFields)
 		}
 		if len(x.AddressPercentage) > 0 {
-			MaRsHaLmAp := func(k string, v string) (protoiface.MarshalOutput, error) {
+			MaRsHaLmAp := func(k string, v *LegacyDec) (protoiface.MarshalOutput, error) {
 				baseI := i
-				i -= len(v)
-				copy(dAtA[i:], v)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(v)))
+				encoded, err := options.Marshal(v)
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 				i--
 				dAtA[i] = 0x12
 				i -= len(k)
@@ -2099,10 +2554,10 @@ func (x *fastReflection_ProtocolPoolConfig) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.AddressPercentage == nil {
-					x.AddressPercentage = make(map[string]string)
+					x.AddressPercentage = make(map[string]*LegacyDec)
 				}
 				var mapkey string
-				var mapvalue string
+				var mapvalue *LegacyDec
 				for iNdEx < postIndex {
 					entryPreIndex := iNdEx
 					var wire uint64
@@ -2151,7 +2606,7 @@ func (x *fastReflection_ProtocolPoolConfig) ProtoMethods() *protoiface.Methods {
 						mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
 						iNdEx = postStringIndexmapkey
 					} else if fieldNum == 2 {
-						var stringLenmapvalue uint64
+						var mapmsglen int
 						for shift := uint(0); ; shift += 7 {
 							if shift >= 64 {
 								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -2161,24 +2616,26 @@ func (x *fastReflection_ProtocolPoolConfig) ProtoMethods() *protoiface.Methods {
 							}
 							b := dAtA[iNdEx]
 							iNdEx++
-							stringLenmapvalue |= uint64(b&0x7F) << shift
+							mapmsglen |= int(b&0x7F) << shift
 							if b < 0x80 {
 								break
 							}
 						}
-						intStringLenmapvalue := int(stringLenmapvalue)
-						if intStringLenmapvalue < 0 {
+						if mapmsglen < 0 {
 							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 						}
-						postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-						if postStringIndexmapvalue < 0 {
+						postmsgIndex := iNdEx + mapmsglen
+						if postmsgIndex < 0 {
 							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 						}
-						if postStringIndexmapvalue > l {
+						if postmsgIndex > l {
 							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 						}
-						mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-						iNdEx = postStringIndexmapvalue
+						mapvalue = &LegacyDec{}
+						if err := options.Unmarshal(dAtA[iNdEx:postmsgIndex], mapvalue); err != nil {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+						}
+						iNdEx = postmsgIndex
 					} else {
 						iNdEx = entryPreIndex
 						skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -2330,7 +2787,7 @@ type BudgetItem struct {
 	unknownFields protoimpl.UnknownFields
 
 	Address            string              `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Weight             string              `protobuf:"bytes,2,opt,name=weight,proto3" json:"weight,omitempty"`
+	Weight             *LegacyDec          `protobuf:"bytes,2,opt,name=weight,proto3" json:"weight,omitempty"`
 	ProtocolPoolConfig *ProtocolPoolConfig `protobuf:"bytes,3,opt,name=protocol_pool_config,json=protocolPoolConfig,proto3" json:"protocol_pool_config,omitempty"`
 }
 
@@ -2361,11 +2818,11 @@ func (x *BudgetItem) GetAddress() string {
 	return ""
 }
 
-func (x *BudgetItem) GetWeight() string {
+func (x *BudgetItem) GetWeight() *LegacyDec {
 	if x != nil {
 		return x.Weight
 	}
-	return ""
+	return nil
 }
 
 func (x *BudgetItem) GetProtocolPoolConfig() *ProtocolPoolConfig {
@@ -2375,18 +2832,53 @@ func (x *BudgetItem) GetProtocolPoolConfig() *ProtocolPoolConfig {
 	return nil
 }
 
+type LegacyDec struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *LegacyDec) Reset() {
+	*x = LegacyDec{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LegacyDec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LegacyDec) ProtoMessage() {}
+
+// Deprecated: Use LegacyDec.ProtoReflect.Descriptor instead.
+func (*LegacyDec) Descriptor() ([]byte, []int) {
+	return file_cosmos_protocolpool_v1_protocolpool_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *LegacyDec) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 type ProtocolPoolConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AddressPercentage map[string]string `protobuf:"bytes,1,rep,name=address_percentage,json=addressPercentage,proto3" json:"address_percentage,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AddressPercentage map[string]*LegacyDec `protobuf:"bytes,1,rep,name=address_percentage,json=addressPercentage,proto3" json:"address_percentage,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *ProtocolPoolConfig) Reset() {
 	*x = ProtocolPoolConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[3]
+		mi := &file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2400,10 +2892,10 @@ func (*ProtocolPoolConfig) ProtoMessage() {}
 
 // Deprecated: Use ProtocolPoolConfig.ProtoReflect.Descriptor instead.
 func (*ProtocolPoolConfig) Descriptor() ([]byte, []int) {
-	return file_cosmos_protocolpool_v1_protocolpool_proto_rawDescGZIP(), []int{3}
+	return file_cosmos_protocolpool_v1_protocolpool_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ProtocolPoolConfig) GetAddressPercentage() map[string]string {
+func (x *ProtocolPoolConfig) GetAddressPercentage() map[string]*LegacyDec {
 	if x != nil {
 		return x.AddressPercentage
 	}
@@ -2432,49 +2924,56 @@ var file_cosmos_protocolpool_v1_protocolpool_proto_rawDesc = []byte{
 	0x69, 0x74, 0x65, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6f,
 	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f,
 	0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x75, 0x64, 0x67, 0x65, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x52,
-	0x05, 0x69, 0x74, 0x65, 0x6d, 0x73, 0x22, 0xe9, 0x01, 0x0a, 0x0a, 0x42, 0x75, 0x64, 0x67, 0x65,
+	0x05, 0x69, 0x74, 0x65, 0x6d, 0x73, 0x22, 0xd9, 0x01, 0x0a, 0x0a, 0x42, 0x75, 0x64, 0x67, 0x65,
 	0x74, 0x49, 0x74, 0x65, 0x6d, 0x12, 0x32, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x49, 0x0a, 0x06, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x31, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
-	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4,
-	0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65,
+	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x39, 0x0a, 0x06, 0x77, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e,
+	0x76, 0x31, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65,
 	0x69, 0x67, 0x68, 0x74, 0x12, 0x5c, 0x0a, 0x14, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
 	0x5f, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x74,
 	0x6f, 0x63, 0x6f, 0x6c, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x12,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66,
-	0x69, 0x67, 0x22, 0xcc, 0x01, 0x0a, 0x12, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x50,
-	0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x70, 0x0a, 0x12, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x18,
-	0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x41, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74,
-	0x61, 0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x11, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x1a, 0x44, 0x0a, 0x16, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65,
-	0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38,
-	0x01, 0x42, 0xe1, 0x01, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31,
-	0x42, 0x11, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x50, 0x72,
-	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x36, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
-	0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2f, 0x76, 0x31, 0x3b, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03,
-	0x43, 0x50, 0x58, 0xaa, 0x02, 0x16, 0x43, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x50, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x16, 0x43,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5c, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f,
-	0x6f, 0x6c, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x22, 0x43, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5c, 0x50,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47,
-	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x18, 0x43, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x3a, 0x3a, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f,
-	0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x67, 0x22, 0x54, 0x0a, 0x09, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0x12,
+	0x47, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x31,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79,
+	0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65,
+	0x63, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0xef, 0x01, 0x0a, 0x12, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12,
+	0x70, 0x0a, 0x12, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65,
+	0x6e, 0x74, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x41, 0x2e, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f,
+	0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x50, 0x6f, 0x6f,
+	0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x50,
+	0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x11,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67,
+	0x65, 0x1a, 0x67, 0x0a, 0x16, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x50, 0x65, 0x72, 0x63,
+	0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b,
+	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x37, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f,
+	0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0x52,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0xe1, 0x01, 0x0a, 0x1a, 0x63,
+	0x6f, 0x6d, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x42, 0x11, 0x50, 0x72, 0x6f, 0x74, 0x6f,
+	0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x36,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69,
+	0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x70, 0x6f, 0x6f, 0x6c, 0x2f, 0x76, 0x31, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x43, 0x50, 0x58, 0xaa, 0x02, 0x16, 0x43,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f,
+	0x6f, 0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x16, 0x43, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5c, 0x50,
+	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0xe2, 0x02,
+	0x22, 0x43, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5c, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x70, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x18, 0x43, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x3a, 0x3a, 0x50, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x70, 0x6f, 0x6f, 0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2489,24 +2988,27 @@ func file_cosmos_protocolpool_v1_protocolpool_proto_rawDescGZIP() []byte {
 	return file_cosmos_protocolpool_v1_protocolpool_proto_rawDescData
 }
 
-var file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_cosmos_protocolpool_v1_protocolpool_proto_goTypes = []interface{}{
 	(*MsgSetBudget)(nil),       // 0: cosmos.protocolpool.v1.MsgSetBudget
 	(*Budget)(nil),             // 1: cosmos.protocolpool.v1.Budget
 	(*BudgetItem)(nil),         // 2: cosmos.protocolpool.v1.BudgetItem
-	(*ProtocolPoolConfig)(nil), // 3: cosmos.protocolpool.v1.ProtocolPoolConfig
-	nil,                        // 4: cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry
+	(*LegacyDec)(nil),          // 3: cosmos.protocolpool.v1.LegacyDec
+	(*ProtocolPoolConfig)(nil), // 4: cosmos.protocolpool.v1.ProtocolPoolConfig
+	nil,                        // 5: cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry
 }
 var file_cosmos_protocolpool_v1_protocolpool_proto_depIdxs = []int32{
 	1, // 0: cosmos.protocolpool.v1.MsgSetBudget.budget:type_name -> cosmos.protocolpool.v1.Budget
 	2, // 1: cosmos.protocolpool.v1.Budget.items:type_name -> cosmos.protocolpool.v1.BudgetItem
-	3, // 2: cosmos.protocolpool.v1.BudgetItem.protocol_pool_config:type_name -> cosmos.protocolpool.v1.ProtocolPoolConfig
-	4, // 3: cosmos.protocolpool.v1.ProtocolPoolConfig.address_percentage:type_name -> cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	3, // 2: cosmos.protocolpool.v1.BudgetItem.weight:type_name -> cosmos.protocolpool.v1.LegacyDec
+	4, // 3: cosmos.protocolpool.v1.BudgetItem.protocol_pool_config:type_name -> cosmos.protocolpool.v1.ProtocolPoolConfig
+	5, // 4: cosmos.protocolpool.v1.ProtocolPoolConfig.address_percentage:type_name -> cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry
+	3, // 5: cosmos.protocolpool.v1.ProtocolPoolConfig.AddressPercentageEntry.value:type_name -> cosmos.protocolpool.v1.LegacyDec
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_cosmos_protocolpool_v1_protocolpool_proto_init() }
@@ -2552,6 +3054,18 @@ func file_cosmos_protocolpool_v1_protocolpool_proto_init() {
 			}
 		}
 		file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*LegacyDec); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_cosmos_protocolpool_v1_protocolpool_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProtocolPoolConfig); i {
 			case 0:
 				return &v.state
@@ -2570,7 +3084,7 @@ func file_cosmos_protocolpool_v1_protocolpool_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_cosmos_protocolpool_v1_protocolpool_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

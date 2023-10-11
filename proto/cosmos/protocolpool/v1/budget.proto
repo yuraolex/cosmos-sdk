@@ -23,3 +23,9 @@ message MsgSetBudgetProposal {
 //
 // Since: cosmos-sdk 0.50
 message MsgSetBudgetProposalResponse {}
+
+message ClaimFunds {
+  string                   recipient_address  = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  cosmos.base.v1beta1.Coin amount       = 2;
+
+}

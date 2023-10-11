@@ -24,7 +24,10 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type Budget struct {
+// MsgSetBudgetProposal defines a message for setting the budget proposal.
+//
+// Since: cosmos-sdk 0.50
+type MsgSetBudgetProposal struct {
 	RecipientAddress  string      `protobuf:"bytes,1,opt,name=recipient_address,json=recipientAddress,proto3" json:"recipient_address,omitempty"`
 	TotalBudget       *types.Coin `protobuf:"bytes,2,opt,name=total_budget,json=totalBudget,proto3" json:"total_budget,omitempty"`
 	StartTime         int64       `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
@@ -32,18 +35,18 @@ type Budget struct {
 	Period            int64       `protobuf:"varint,5,opt,name=period,proto3" json:"period,omitempty"`
 }
 
-func (m *Budget) Reset()         { *m = Budget{} }
-func (m *Budget) String() string { return proto.CompactTextString(m) }
-func (*Budget) ProtoMessage()    {}
-func (*Budget) Descriptor() ([]byte, []int) {
+func (m *MsgSetBudgetProposal) Reset()         { *m = MsgSetBudgetProposal{} }
+func (m *MsgSetBudgetProposal) String() string { return proto.CompactTextString(m) }
+func (*MsgSetBudgetProposal) ProtoMessage()    {}
+func (*MsgSetBudgetProposal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2414eab590ecb8a3, []int{0}
 }
-func (m *Budget) XXX_Unmarshal(b []byte) error {
+func (m *MsgSetBudgetProposal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *Budget) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSetBudgetProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_Budget.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSetBudgetProposal.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -53,55 +56,96 @@ func (m *Budget) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *Budget) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Budget.Merge(m, src)
+func (m *MsgSetBudgetProposal) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetBudgetProposal.Merge(m, src)
 }
-func (m *Budget) XXX_Size() int {
+func (m *MsgSetBudgetProposal) XXX_Size() int {
 	return m.Size()
 }
-func (m *Budget) XXX_DiscardUnknown() {
-	xxx_messageInfo_Budget.DiscardUnknown(m)
+func (m *MsgSetBudgetProposal) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetBudgetProposal.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Budget proto.InternalMessageInfo
+var xxx_messageInfo_MsgSetBudgetProposal proto.InternalMessageInfo
 
-func (m *Budget) GetRecipientAddress() string {
+func (m *MsgSetBudgetProposal) GetRecipientAddress() string {
 	if m != nil {
 		return m.RecipientAddress
 	}
 	return ""
 }
 
-func (m *Budget) GetTotalBudget() *types.Coin {
+func (m *MsgSetBudgetProposal) GetTotalBudget() *types.Coin {
 	if m != nil {
 		return m.TotalBudget
 	}
 	return nil
 }
 
-func (m *Budget) GetStartTime() int64 {
+func (m *MsgSetBudgetProposal) GetStartTime() int64 {
 	if m != nil {
 		return m.StartTime
 	}
 	return 0
 }
 
-func (m *Budget) GetRemainingTranches() int64 {
+func (m *MsgSetBudgetProposal) GetRemainingTranches() int64 {
 	if m != nil {
 		return m.RemainingTranches
 	}
 	return 0
 }
 
-func (m *Budget) GetPeriod() int64 {
+func (m *MsgSetBudgetProposal) GetPeriod() int64 {
 	if m != nil {
 		return m.Period
 	}
 	return 0
 }
 
+// MsgSetBudgetProposalResponse defines the response to executing a
+// MsgSetBudgetProposal message.
+//
+// Since: cosmos-sdk 0.50
+type MsgSetBudgetProposalResponse struct {
+}
+
+func (m *MsgSetBudgetProposalResponse) Reset()         { *m = MsgSetBudgetProposalResponse{} }
+func (m *MsgSetBudgetProposalResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSetBudgetProposalResponse) ProtoMessage()    {}
+func (*MsgSetBudgetProposalResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2414eab590ecb8a3, []int{1}
+}
+func (m *MsgSetBudgetProposalResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSetBudgetProposalResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSetBudgetProposalResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSetBudgetProposalResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetBudgetProposalResponse.Merge(m, src)
+}
+func (m *MsgSetBudgetProposalResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSetBudgetProposalResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetBudgetProposalResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSetBudgetProposalResponse proto.InternalMessageInfo
+
 func init() {
-	proto.RegisterType((*Budget)(nil), "cosmos.protocolpool.v1.Budget")
+	proto.RegisterType((*MsgSetBudgetProposal)(nil), "cosmos.protocolpool.v1.MsgSetBudgetProposal")
+	proto.RegisterType((*MsgSetBudgetProposalResponse)(nil), "cosmos.protocolpool.v1.MsgSetBudgetProposalResponse")
 }
 
 func init() {
@@ -109,30 +153,32 @@ func init() {
 }
 
 var fileDescriptor_2414eab590ecb8a3 = []byte{
-	// 314 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x91, 0x41, 0x4e, 0x02, 0x31,
-	0x14, 0x86, 0xa9, 0x28, 0x09, 0xc5, 0x85, 0x4c, 0x0c, 0x19, 0x48, 0x6c, 0x50, 0x37, 0x6c, 0x68,
-	0x33, 0xba, 0xd4, 0x8d, 0x18, 0x2f, 0x80, 0xac, 0xdc, 0x4c, 0x3a, 0x33, 0x0d, 0x36, 0x32, 0x7d,
-	0x93, 0xf6, 0x49, 0xf4, 0x16, 0x1e, 0xc6, 0x43, 0xb8, 0x24, 0xae, 0x5c, 0x1a, 0x38, 0x82, 0x17,
-	0x30, 0x76, 0x1a, 0x82, 0xcb, 0xf7, 0xff, 0xdf, 0x3f, 0xf3, 0x25, 0xa5, 0xe7, 0x39, 0xb8, 0x12,
-	0x9c, 0xa8, 0x2c, 0x20, 0xe4, 0xb0, 0xa8, 0x00, 0x16, 0x62, 0x99, 0x88, 0xec, 0xb9, 0x98, 0x2b,
-	0xe4, 0x3e, 0x8e, 0x7a, 0x35, 0xc4, 0x77, 0x21, 0xbe, 0x4c, 0x06, 0x2c, 0x8c, 0x33, 0xe9, 0x94,
-	0x58, 0x26, 0x99, 0x42, 0x99, 0x88, 0x1c, 0xb4, 0xa9, 0xc9, 0x41, 0xbf, 0xee, 0x53, 0x7f, 0x89,
-	0xdd, 0x8f, 0x9c, 0xfd, 0x10, 0xda, 0x9a, 0xf8, 0x7f, 0x44, 0x77, 0xb4, 0x6b, 0x55, 0xae, 0x2b,
-	0xad, 0x0c, 0xa6, 0xb2, 0x28, 0xac, 0x72, 0x2e, 0x26, 0x43, 0x32, 0x6a, 0x4f, 0xe2, 0xcf, 0xf7,
-	0xf1, 0x71, 0xd8, 0xdd, 0xd4, 0xcd, 0x3d, 0x5a, 0x6d, 0xe6, 0xd3, 0xa3, 0xed, 0x24, 0xe4, 0xd1,
-	0x35, 0x3d, 0x44, 0x40, 0xb9, 0x48, 0x6b, 0xf5, 0x78, 0x6f, 0x48, 0x46, 0x9d, 0x8b, 0x3e, 0x0f,
-	0xf3, 0x3f, 0x47, 0x1e, 0x1c, 0xf9, 0x2d, 0x68, 0x33, 0xed, 0x78, 0x3c, 0x48, 0x9c, 0x50, 0xea,
-	0x50, 0x5a, 0x4c, 0x51, 0x97, 0x2a, 0x6e, 0x0e, 0xc9, 0xa8, 0x39, 0x6d, 0xfb, 0x64, 0xa6, 0x4b,
-	0x15, 0x8d, 0x69, 0x64, 0x55, 0x29, 0xb5, 0xd1, 0x66, 0x9e, 0xa2, 0x95, 0x26, 0x7f, 0x54, 0x2e,
-	0xde, 0xf7, 0x58, 0x77, 0xdb, 0xcc, 0x42, 0x11, 0xf5, 0x68, 0xab, 0x52, 0x56, 0x43, 0x11, 0x1f,
-	0x78, 0x24, 0x5c, 0x93, 0xab, 0x8f, 0x35, 0x23, 0xab, 0x35, 0x23, 0xdf, 0x6b, 0x46, 0xde, 0x36,
-	0xac, 0xb1, 0xda, 0xb0, 0xc6, 0xd7, 0x86, 0x35, 0x1e, 0x4e, 0x6b, 0x4d, 0x57, 0x3c, 0x71, 0x0d,
-	0xe2, 0xe5, 0xff, 0x7b, 0xe0, 0x6b, 0xa5, 0x5c, 0xd6, 0xf2, 0xd9, 0xe5, 0x6f, 0x00, 0x00, 0x00,
-	0xff, 0xff, 0xc1, 0xde, 0xf9, 0x07, 0xb3, 0x01, 0x00, 0x00,
+	// 342 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0xc1, 0x4e, 0xea, 0x40,
+	0x14, 0x86, 0x29, 0xdc, 0x4b, 0xc2, 0x70, 0x17, 0x97, 0x86, 0x90, 0x42, 0x74, 0x82, 0xb8, 0x61,
+	0x43, 0x9b, 0xea, 0x52, 0x37, 0x62, 0x5c, 0x9a, 0x98, 0xc2, 0xca, 0x4d, 0x33, 0x6d, 0x4f, 0xea,
+	0xc4, 0x76, 0x4e, 0x33, 0x33, 0x12, 0x5d, 0xfa, 0x06, 0x3e, 0x8c, 0x0f, 0xe1, 0x92, 0xb8, 0x72,
+	0x69, 0xe0, 0x45, 0x8c, 0xd3, 0x09, 0xc1, 0xc4, 0xe5, 0xf9, 0xff, 0xef, 0x3f, 0xfd, 0x4f, 0x87,
+	0x1c, 0xa7, 0xa8, 0x4a, 0x54, 0x41, 0x25, 0x51, 0x63, 0x8a, 0x45, 0x85, 0x58, 0x04, 0xab, 0x30,
+	0x48, 0x1e, 0xb2, 0x1c, 0xb4, 0x6f, 0x64, 0x77, 0x50, 0x43, 0xfe, 0x3e, 0xe4, 0xaf, 0xc2, 0x11,
+	0xb5, 0xe1, 0x84, 0x29, 0x08, 0x56, 0x61, 0x02, 0x9a, 0x85, 0x41, 0x8a, 0x5c, 0xd4, 0xe4, 0x68,
+	0x58, 0xfb, 0xb1, 0x99, 0x82, 0xfd, 0x25, 0x93, 0xe7, 0x26, 0xe9, 0x5f, 0xab, 0x7c, 0x01, 0x7a,
+	0x6e, 0xbe, 0x74, 0x23, 0xb1, 0x42, 0xc5, 0x0a, 0xf7, 0x8a, 0xf4, 0x24, 0xa4, 0xbc, 0xe2, 0x20,
+	0x74, 0xcc, 0xb2, 0x4c, 0x82, 0x52, 0x9e, 0x33, 0x76, 0xa6, 0x9d, 0xb9, 0xf7, 0xfe, 0x3a, 0xeb,
+	0xdb, 0x2d, 0x17, 0xb5, 0xb3, 0xd0, 0x92, 0x8b, 0x3c, 0xfa, 0xbf, 0x8b, 0x58, 0xdd, 0x3d, 0x27,
+	0xff, 0x34, 0x6a, 0x56, 0xc4, 0xf5, 0x21, 0x5e, 0x73, 0xec, 0x4c, 0xbb, 0x27, 0x43, 0xdf, 0xc6,
+	0xbf, 0x1b, 0xfb, 0xb6, 0xb1, 0x7f, 0x89, 0x5c, 0x44, 0x5d, 0x83, 0xd7, 0x65, 0xdc, 0x43, 0x42,
+	0x94, 0x66, 0x52, 0xc7, 0x9a, 0x97, 0xe0, 0xb5, 0xc6, 0xce, 0xb4, 0x15, 0x75, 0x8c, 0xb2, 0xe4,
+	0x25, 0xb8, 0x33, 0xe2, 0x4a, 0x28, 0x19, 0x17, 0x5c, 0xe4, 0xb1, 0x96, 0x4c, 0xa4, 0x77, 0xa0,
+	0xbc, 0x3f, 0x06, 0xeb, 0xed, 0x9c, 0xa5, 0x35, 0xdc, 0x01, 0x69, 0x57, 0x20, 0x39, 0x66, 0xde,
+	0x5f, 0x83, 0xd8, 0x69, 0x42, 0xc9, 0xc1, 0x6f, 0xbf, 0x20, 0x02, 0x55, 0xa1, 0x50, 0x30, 0x3f,
+	0x7b, 0xdb, 0x50, 0x67, 0xbd, 0xa1, 0xce, 0xe7, 0x86, 0x3a, 0x2f, 0x5b, 0xda, 0x58, 0x6f, 0x69,
+	0xe3, 0x63, 0x4b, 0x1b, 0xb7, 0x47, 0xf5, 0x19, 0x2a, 0xbb, 0xf7, 0x39, 0x06, 0x8f, 0x3f, 0x5f,
+	0x4f, 0x3f, 0x55, 0xa0, 0x92, 0xb6, 0xd1, 0x4e, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0xcb, 0xa1,
+	0xf8, 0x36, 0xe1, 0x01, 0x00, 0x00,
 }
 
-func (m *Budget) Marshal() (dAtA []byte, err error) {
+func (m *MsgSetBudgetProposal) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -142,12 +188,12 @@ func (m *Budget) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Budget) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSetBudgetProposal) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Budget) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSetBudgetProposal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -189,6 +235,29 @@ func (m *Budget) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgSetBudgetProposalResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgSetBudgetProposalResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgSetBudgetProposalResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintBudget(dAtA []byte, offset int, v uint64) int {
 	offset -= sovBudget(v)
 	base := offset
@@ -200,7 +269,7 @@ func encodeVarintBudget(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *Budget) Size() (n int) {
+func (m *MsgSetBudgetProposal) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -226,13 +295,22 @@ func (m *Budget) Size() (n int) {
 	return n
 }
 
+func (m *MsgSetBudgetProposalResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func sovBudget(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozBudget(x uint64) (n int) {
 	return sovBudget(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Budget) Unmarshal(dAtA []byte) error {
+func (m *MsgSetBudgetProposal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -255,10 +333,10 @@ func (m *Budget) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Budget: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSetBudgetProposal: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Budget: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSetBudgetProposal: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -386,6 +464,56 @@ func (m *Budget) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipBudget(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthBudget
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetBudgetProposalResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowBudget
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetBudgetProposalResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetBudgetProposalResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipBudget(dAtA[iNdEx:])

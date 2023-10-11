@@ -7,7 +7,6 @@ option go_package = "cosmossdk.io/x/protocolpool/types";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 
-
 // MsgSetBudgetProposal defines a message for setting the budget proposal.
 //
 // Since: cosmos-sdk 0.50

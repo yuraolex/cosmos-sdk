@@ -65,6 +65,24 @@ func (k MsgServer) CommunityPoolSpend(ctx context.Context, msg *types.MsgCommuni
 	return &types.MsgCommunityPoolSpendResponse{}, nil
 }
 
+func (k MsgServer) SetBudgetProposal(ctx context.Context, msg *types.MsgSetBudgetProposal) (*types.MsgSetBudgetProposalResponse, error) {
+	err := k.HandleSetBudgetProposal(ctx, *msg)
+	if err != nil {
+		return nil, err
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Emit an event for the budget update
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeSetBudget,
+			sdk.NewAttribute(types.AttributeKeyProposer, msg.RecipientAddress),
+		),
+	)
+	return &types.MsgSetBudgetProposalResponse{}, nil
+}
+
 func (k *Keeper) validateAuthority(authority string) error {
 	if _, err := k.authKeeper.AddressCodec().StringToBytes(authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)

@@ -3,16 +3,15 @@ package autocli
 import (
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"cosmossdk.io/x/tx/signing/aminojson"
 	"github.com/cockroachdb/errors"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"cosmossdk.io/client/v2/internal/flags"
 	"cosmossdk.io/client/v2/internal/util"
 )
 
@@ -101,23 +100,19 @@ func (b *Builder) AddQueryServiceCommands(cmd *cobra.Command, cmdDescriptor *aut
 // BuildQueryMethodCommand creates a gRPC query command for the given service method. This can be used to auto-generate
 // just a single command for a single service rpc method.
 func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescriptor, options *autocliv1.RpcCommandOptions) (*cobra.Command, error) {
-
 	getClientConn := b.GetClientConn
 	serviceDescriptor := descriptor.Parent().(protoreflect.ServiceDescriptor)
 	methodName := fmt.Sprintf("/%s/%s", serviceDescriptor.FullName(), descriptor.Name())
 	outputType := util.ResolveMessageType(b.TypeResolver, descriptor.Output())
-	encoderOptions := aminojson.EncoderOptions{
+	jsonMarshalOptions := protojson.MarshalOptions{
 		Indent:          "  ",
-		DoNotSortFields: true,
-		TypeResolver:    b.TypeResolver,
-		FileResolver:    b.FileResolver,
+		UseProtoNames:   true,
+		UseEnumNumbers:  false,
+		EmitUnpopulated: true,
+		Resolver:        b.TypeResolver,
 	}
 
 	cmd, err := b.buildMethodCommandCommon(descriptor, options, func(cmd *cobra.Command, input protoreflect.Message) error {
-		if noIndent, _ := cmd.Flags().GetBool(flags.FlagNoIndent); noIndent {
-			encoderOptions.Indent = ""
-		}
-
 		clientConn, err := getClientConn(cmd)
 		if err != nil {
 			return err
@@ -128,24 +123,9 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 			return err
 		}
 
-		var message strings.Builder
-		message.WriteString(fmt.Sprintf("serviceDescriptor: %+v", serviceDescriptor))
-		message.WriteString("\n")
-		message.WriteString(fmt.Sprintf("methodName: %s", methodName))
-		message.WriteString("\n")
-		message.WriteString(fmt.Sprintf("outputType: %+v", outputType))
-		message.WriteString("\n")
-		message.WriteString(fmt.Sprintf("encoderOptions: %+v", encoderOptions))
-		message.WriteString("\n")
-		message.WriteString(fmt.Sprintf("clientConn: %+v", clientConn))
-		message.WriteString("\n")
-		message.WriteString(fmt.Sprintf("output: %+v", output))
-		message.WriteString("\n")
-
-		enc := encoder(aminojson.NewEncoder(encoderOptions))
-		bz, err := enc.Marshal(output.Interface())
+		bz, err := jsonMarshalOptions.Marshal(output.Interface())
 		if err != nil {
-			return fmt.Errorf("cannot marshal response %v: %w, \n EXTRA INFO %s", output.Interface(), err, message.String())
+			return fmt.Errorf("cannot marshal response %v: %w", output.Interface(), err)
 		}
 
 		err = b.outOrStdoutFormat(cmd, bz)
@@ -157,13 +137,6 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 
 	if b.AddQueryConnFlags != nil {
 		b.AddQueryConnFlags(cmd)
-
-		cmd.Flags().BoolP(flags.FlagNoIndent, "", false, "Do not indent JSON output")
-	}
-
-	// silence usage only for inner txs & queries commands
-	if cmd != nil {
-		cmd.SilenceUsage = true
 	}
 
 	return cmd, nil

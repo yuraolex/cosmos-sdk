@@ -3,13 +3,14 @@ package autocli
 import (
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	"cosmossdk.io/client/v2/internal/flags"
 	"cosmossdk.io/x/tx/signing/aminojson"
 	"github.com/cockroachdb/errors"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"cosmossdk.io/client/v2/internal/util"
@@ -104,15 +105,17 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 	serviceDescriptor := descriptor.Parent().(protoreflect.ServiceDescriptor)
 	methodName := fmt.Sprintf("/%s/%s", serviceDescriptor.FullName(), descriptor.Name())
 	outputType := util.ResolveMessageType(b.TypeResolver, descriptor.Output())
-	jsonMarshalOptions := protojson.MarshalOptions{
+	encoderOptions := aminojson.EncoderOptions{
 		Indent:          "  ",
-		UseProtoNames:   true,
-		UseEnumNumbers:  false,
-		EmitUnpopulated: true,
-		Resolver:        b.TypeResolver,
+		DoNotSortFields: true,
+		TypeResolver:    b.TypeResolver,
+		FileResolver:    b.FileResolver,
 	}
 
 	cmd, err := b.buildMethodCommandCommon(descriptor, options, func(cmd *cobra.Command, input protoreflect.Message) error {
+		if noIndent, _ := cmd.Flags().GetBool(flags.FlagNoIndent); noIndent {
+			encoderOptions.Indent = ""
+		}
 		clientConn, err := getClientConn(cmd)
 		if err != nil {
 			return err
@@ -123,9 +126,24 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 			return err
 		}
 
-		bz, err := jsonMarshalOptions.Marshal(output.Interface())
+		var message strings.Builder
+		message.WriteString(fmt.Sprintf("serviceDescriptor: %+v", serviceDescriptor))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("methodName: %s", methodName))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("outputType: %+v", outputType))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("encoderOptions: %+v", encoderOptions))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("clientConn: %+v", clientConn))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("output: %+v", output))
+		message.WriteString("\n")
+
+		enc := encoder(aminojson.NewEncoder(encoderOptions))
+		bz, err := enc.Marshal(output.Interface())
 		if err != nil {
-			return fmt.Errorf("cannot marshal response %v: %w", output.Interface(), err)
+			return fmt.Errorf("cannot marshal response %v: %w, \n EXTRA INFO %s", output.Interface(), err, message.String())
 		}
 
 		err = b.outOrStdoutFormat(cmd, bz)

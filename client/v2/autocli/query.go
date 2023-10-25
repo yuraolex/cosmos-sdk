@@ -3,6 +3,7 @@ package autocli
 import (
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
@@ -100,6 +101,7 @@ func (b *Builder) AddQueryServiceCommands(cmd *cobra.Command, cmdDescriptor *aut
 // BuildQueryMethodCommand creates a gRPC query command for the given service method. This can be used to auto-generate
 // just a single command for a single service rpc method.
 func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescriptor, options *autocliv1.RpcCommandOptions) (*cobra.Command, error) {
+
 	getClientConn := b.GetClientConn
 	serviceDescriptor := descriptor.Parent().(protoreflect.ServiceDescriptor)
 	methodName := fmt.Sprintf("/%s/%s", serviceDescriptor.FullName(), descriptor.Name())
@@ -126,10 +128,24 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 			return err
 		}
 
+		var message strings.Builder
+		message.WriteString(fmt.Sprintf("serviceDescriptor: %+v", serviceDescriptor))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("methodName: %s", methodName))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("outputType: %+v", outputType))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("encoderOptions: %+v", encoderOptions))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("clientConn: %+v", clientConn))
+		message.WriteString("\n")
+		message.WriteString(fmt.Sprintf("output: %+v", output))
+		message.WriteString("\n")
+
 		enc := encoder(aminojson.NewEncoder(encoderOptions))
 		bz, err := enc.Marshal(output.Interface())
 		if err != nil {
-			return fmt.Errorf("cannot marshal response %v: %w", output.Interface(), err)
+			return fmt.Errorf("cannot marshal response %v: %w, \n EXTRA INFO %s", output.Interface(), err, message.String())
 		}
 
 		err = b.outOrStdoutFormat(cmd, bz)

@@ -6,12 +6,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	txclient "cosmossdk.io/x/tx/client"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 )
 
 const (
@@ -88,7 +89,7 @@ func makeSignBatchCmd() func(cmd *cobra.Command, args []string) error {
 		clientCtx.WithOutput(cmd.OutOrStdout())
 
 		// reads tx from args
-		scanner, err := authclient.ReadTxsFromInput(txCfg, args...)
+		scanner, err := txclient.ReadTxsFromInput(txCfg, args...)
 		if err != nil {
 			return err
 		}
@@ -211,7 +212,7 @@ func sign(clientCtx client.Context, txBuilder client.TxBuilder, txFactory tx.Fac
 		return fmt.Errorf("error getting account from keybase: %w", err)
 	}
 
-	if err = authclient.SignTx(txFactory, clientCtx, fromName, txBuilder, true, true); err != nil {
+	if err = txclient.SignTx(txFactory, clientCtx, fromName, txBuilder, true, true); err != nil {
 		return err
 	}
 
@@ -224,7 +225,7 @@ func multisigSign(clientCtx client.Context, txBuilder client.TxBuilder, txFactor
 		return fmt.Errorf("error getting account from keybase: %w", err)
 	}
 
-	if err = authclient.SignTxWithSignerAddress(
+	if err = txclient.SignTxWithSignerAddress(
 		txFactory,
 		clientCtx,
 		multisigAddr,
@@ -388,14 +389,14 @@ func signTx(cmd *cobra.Command, clientCtx client.Context, txF tx.Factory, newTx 
 		if !found {
 			return fmt.Errorf("signing key is not a part of multisig key")
 		}
-		err = authclient.SignTxWithSignerAddress(
+		err = txclient.SignTxWithSignerAddress(
 			txF, clientCtx, multisigAddr, fromName, txBuilder, clientCtx.Offline, overwrite)
 		if err != nil {
 			return err
 		}
 		printSignatureOnly = true
 	} else {
-		err = authclient.SignTx(txF, clientCtx, clientCtx.FromName, txBuilder, clientCtx.Offline, overwrite)
+		err = txclient.SignTx(txF, clientCtx, clientCtx.FromName, txBuilder, clientCtx.Offline, overwrite)
 	}
 	if err != nil {
 		return err

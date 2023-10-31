@@ -3,11 +3,12 @@ package cli
 import (
 	"fmt"
 
+	txcli "cosmossdk.io/x/tx/client/cli"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authcli "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 )
 
 // CheckTxCode verifies that the transaction result returns a specific code
@@ -20,7 +21,7 @@ func CheckTxCode(network *network.Network, clientCtx client.Context, txHash stri
 		}
 	}
 
-	cmd := authcli.QueryTxCmd()
+	cmd := txcli.QueryTxCmd()
 	out, err := ExecTestCLICmd(clientCtx, cmd, []string{txHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
 	if err != nil {
 		return err
@@ -48,7 +49,7 @@ func GetTxResponse(network *network.Network, clientCtx client.Context, txHash st
 		}
 	}
 
-	cmd := authcli.QueryTxCmd()
+	cmd := txcli.QueryTxCmd()
 	out, err := ExecTestCLICmd(clientCtx, cmd, []string{txHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
 	if err != nil {
 		return sdk.TxResponse{}, err

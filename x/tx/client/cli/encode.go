@@ -5,9 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	txclient "cosmossdk.io/x/tx/client"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 )
 
 // GetEncodeCommand returns the encode command to take a JSONified transaction and turn it into
@@ -23,7 +24,7 @@ If you supply a dash (-) argument in place of an input filename, the command rea
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
-			tx, err := authclient.ReadTxFromFile(clientCtx, args[0])
+			tx, err := txclient.ReadTxFromFile(clientCtx, args[0])
 			if err != nil {
 				return err
 			}

@@ -7,10 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	txclient "cosmossdk.io/x/tx/client"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
-	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 )
 
 // GetBroadcastCommand returns the tx broadcast command.
@@ -34,7 +35,7 @@ filename, the command reads from standard input.`),
 				return errors.New("cannot broadcast tx during offline mode")
 			}
 
-			stdTx, err := authclient.ReadTxFromFile(clientCtx, args[0])
+			stdTx, err := txclient.ReadTxFromFile(clientCtx, args[0])
 			if err != nil {
 				return err
 			}

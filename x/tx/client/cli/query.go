@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/x/tx/helpers"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -12,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/version"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 )
 
 const (
@@ -55,7 +55,7 @@ for. Each module documents its respective events under 'xx_events.md'.
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
 			orderBy, _ := cmd.Flags().GetString(FlagOrderBy)
 
-			txs, err := authtx.QueryTxsByEvents(clientCtx, page, limit, query, orderBy)
+			txs, err := helpers.QueryTxsByEvents(clientCtx, page, limit, query, orderBy)
 			if err != nil {
 				return err
 			}
@@ -104,7 +104,7 @@ $ %s query tx --%s=%s <sig1_base64>,<sig2_base64...>
 				}
 
 				// if hash is given, then query the tx by hash
-				output, err := authtx.QueryTx(clientCtx, args[0])
+				output, err := helpers.QueryTx(clientCtx, args[0])
 				if err != nil {
 					return err
 				}
@@ -128,7 +128,7 @@ $ %s query tx --%s=%s <sig1_base64>,<sig2_base64...>
 
 				query := strings.Join(events, " AND ")
 
-				txs, err := authtx.QueryTxsByEvents(clientCtx, querytypes.DefaultPage, querytypes.DefaultLimit, query, "")
+				txs, err := helpers.QueryTxsByEvents(clientCtx, querytypes.DefaultPage, querytypes.DefaultLimit, query, "")
 				if err != nil {
 					return err
 				}
@@ -151,7 +151,7 @@ $ %s query tx --%s=%s <sig1_base64>,<sig2_base64...>
 
 				query := fmt.Sprintf("%s.%s='%s'", sdk.EventTypeTx, sdk.AttributeKeyAccountSequence, args[0])
 
-				txs, err := authtx.QueryTxsByEvents(clientCtx, querytypes.DefaultPage, querytypes.DefaultLimit, query, "")
+				txs, err := helpers.QueryTxsByEvents(clientCtx, querytypes.DefaultPage, querytypes.DefaultLimit, query, "")
 				if err != nil {
 					return err
 				}

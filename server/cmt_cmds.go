@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"cosmossdk.io/log"
+	txcli "cosmossdk.io/x/tx/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -27,7 +28,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/version"
-	auth "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 )
 
 // StatusCommand returns the command to return the status of the network.
@@ -190,10 +190,10 @@ for. Each module documents its respective events under 'xx_events.md'.
 			if err != nil {
 				return err
 			}
-			query, _ := cmd.Flags().GetString(auth.FlagQuery)
+			query, _ := cmd.Flags().GetString(txcli.FlagQuery)
 			page, _ := cmd.Flags().GetInt(flags.FlagPage)
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
-			orderBy, _ := cmd.Flags().GetString(auth.FlagOrderBy)
+			orderBy, _ := cmd.Flags().GetString(txcli.FlagOrderBy)
 
 			blocks, err := rpc.QueryBlocks(clientCtx, page, limit, query, orderBy)
 			if err != nil {
@@ -207,9 +207,9 @@ for. Each module documents its respective events under 'xx_events.md'.
 	flags.AddQueryFlagsToCmd(cmd)
 	cmd.Flags().Int(flags.FlagPage, query.DefaultPage, "Query a specific page of paginated results")
 	cmd.Flags().Int(flags.FlagLimit, query.DefaultLimit, "Query number of transactions results per page returned")
-	cmd.Flags().String(auth.FlagQuery, "", "The blocks events query per CometBFT's query semantics")
-	cmd.Flags().String(auth.FlagOrderBy, "", "The ordering semantics (asc|dsc)")
-	_ = cmd.MarkFlagRequired(auth.FlagQuery)
+	cmd.Flags().String(txcli.FlagQuery, "", "The blocks events query per CometBFT's query semantics")
+	cmd.Flags().String(txcli.FlagOrderBy, "", "The ordering semantics (asc|dsc)")
+	_ = cmd.MarkFlagRequired(txcli.FlagQuery)
 
 	return cmd
 }
@@ -224,8 +224,8 @@ func QueryBlockCmd() *cobra.Command {
 $ %s query block --%s=%s <height>
 $ %s query block --%s=%s <hash>
 `,
-			version.AppName, auth.FlagType, auth.TypeHeight,
-			version.AppName, auth.FlagType, auth.TypeHash)),
+			version.AppName, txcli.FlagType, txcli.TypeHeight,
+			version.AppName, txcli.FlagType, txcli.TypeHash)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -233,10 +233,10 @@ $ %s query block --%s=%s <hash>
 				return err
 			}
 
-			typ, _ := cmd.Flags().GetString(auth.FlagType)
+			typ, _ := cmd.Flags().GetString(txcli.FlagType)
 
 			switch typ {
-			case auth.TypeHeight:
+			case txcli.TypeHeight:
 
 				if args[0] == "" {
 					return fmt.Errorf("argument should be a block height")
@@ -262,7 +262,7 @@ $ %s query block --%s=%s <hash>
 
 				return clientCtx.PrintProto(output)
 
-			case auth.TypeHash:
+			case txcli.TypeHash:
 
 				if args[0] == "" {
 					return fmt.Errorf("argument should be a tx hash")
@@ -281,13 +281,13 @@ $ %s query block --%s=%s <hash>
 				return clientCtx.PrintProto(output)
 
 			default:
-				return fmt.Errorf("unknown --%s value %s", auth.FlagType, typ)
+				return fmt.Errorf("unknown --%s value %s", txcli.FlagType, typ)
 			}
 		},
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	cmd.Flags().String(auth.FlagType, auth.TypeHash, fmt.Sprintf("The type to be used when querying tx, can be one of \"%s\", \"%s\"", auth.TypeHeight, auth.TypeHash))
+	cmd.Flags().String(txcli.FlagType, txcli.TypeHash, fmt.Sprintf("The type to be used when querying tx, can be one of \"%s\", \"%s\"", txcli.TypeHeight, txcli.TypeHash))
 
 	return cmd
 }

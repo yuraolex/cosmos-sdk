@@ -16,6 +16,7 @@ import (
 	banktypes "cosmossdk.io/x/bank/types"
 	govtestutil "cosmossdk.io/x/gov/client/testutil"
 	govtypes "cosmossdk.io/x/gov/types/v1beta1"
+	txcli "cosmossdk.io/x/tx/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -30,7 +31,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	authcli "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authclitestutil "github.com/cosmos/cosmos-sdk/x/auth/client/testutil"
 	authtestutil "github.com/cosmos/cosmos-sdk/x/auth/testutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
@@ -186,7 +186,7 @@ func (s *E2ETestSuite) TestCLISignGenOnly() {
 	}
 
 	for _, tc := range cases {
-		cmd := authcli.GetSignCommand()
+		cmd := txcli.GetSignCommand()
 		cmd.PersistentFlags().String(flags.FlagHome, val.ClientCtx.HomeDir, "directory for config and data")
 		out, err := clitestutil.ExecTestCLICmd(val.ClientCtx, cmd, append(tc.args, commonArgs...))
 		if tc.expErr {
@@ -353,7 +353,7 @@ func (s *E2ETestSuite) TestCLIQueryTxCmdByHash() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxCmd()
+			cmd := txcli.QueryTxCmd()
 			clientCtx := val.ClientCtx
 			var (
 				out testutil.BufferWriter
@@ -405,7 +405,7 @@ func (s *E2ETestSuite) TestCLIQueryTxCmdByEvents() {
 	var out testutil.BufferWriter
 	// Query the tx by hash to get the inner tx.
 	err = s.network.RetryForBlocks(func() error {
-		out, err = clitestutil.ExecTestCLICmd(val.ClientCtx, authcli.QueryTxCmd(), []string{txRes.TxHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
+		out, err = clitestutil.ExecTestCLICmd(val.ClientCtx, txcli.QueryTxCmd(), []string{txRes.TxHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
 		return err
 	}, 3)
 	s.Require().NoError(err)
@@ -486,7 +486,7 @@ func (s *E2ETestSuite) TestCLIQueryTxCmdByEvents() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxCmd()
+			cmd := txcli.QueryTxCmd()
 			clientCtx := val.ClientCtx
 
 			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
@@ -528,7 +528,7 @@ func (s *E2ETestSuite) TestCLIQueryTxsCmdByEvents() {
 	var out testutil.BufferWriter
 	// Query the tx by hash to get the inner tx.
 	err = s.network.RetryForBlocks(func() error {
-		out, err = clitestutil.ExecTestCLICmd(val.ClientCtx, authcli.QueryTxCmd(), []string{txRes.TxHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
+		out, err = clitestutil.ExecTestCLICmd(val.ClientCtx, txcli.QueryTxCmd(), []string{txRes.TxHash, fmt.Sprintf("--%s=json", flags.FlagOutput)})
 		return err
 	}, 3)
 	s.Require().NoError(err)
@@ -566,7 +566,7 @@ func (s *E2ETestSuite) TestCLIQueryTxsCmdByEvents() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxsByEventsCmd()
+			cmd := txcli.QueryTxsByEventsCmd()
 			clientCtx := val.ClientCtx
 
 			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
@@ -1273,7 +1273,7 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 }
 
 func TestGetBroadcastCommandOfflineFlag(t *testing.T) {
-	cmd := authcli.GetBroadcastCommand()
+	cmd := txcli.GetBroadcastCommand()
 	_ = testutil.ApplyMockIODiscardOutErr(cmd)
 	cmd.SetArgs([]string{fmt.Sprintf("--%s=true", flags.FlagOffline), ""})
 
@@ -1290,7 +1290,7 @@ func TestGetBroadcastCommandWithoutOfflineFlag(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
 
-	cmd := authcli.GetBroadcastCommand()
+	cmd := txcli.GetBroadcastCommand()
 	_, out := testutil.ApplyMockIO(cmd)
 
 	// Create new file with tx

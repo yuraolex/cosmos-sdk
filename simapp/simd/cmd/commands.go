@@ -13,6 +13,7 @@ import (
 	"cosmossdk.io/simapp"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
 	banktypes "cosmossdk.io/x/bank/types"
+	txcmd "cosmossdk.io/x/tx/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -27,7 +28,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 )
@@ -90,9 +90,9 @@ func queryCommand() *cobra.Command {
 	cmd.AddCommand(
 		rpc.QueryEventForTxCmd(),
 		server.QueryBlockCmd(),
-		authcmd.QueryTxsByEventsCmd(),
+		txcmd.QueryTxsByEventsCmd(),
 		server.QueryBlocksCmd(),
-		authcmd.QueryTxCmd(),
+		txcmd.QueryTxCmd(),
 		server.QueryBlockResultsCmd(),
 	)
 
@@ -109,15 +109,15 @@ func txCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		authcmd.GetSignCommand(),
-		authcmd.GetSignBatchCommand(),
-		authcmd.GetMultiSignCommand(),
-		authcmd.GetMultiSignBatchCmd(),
-		authcmd.GetValidateSignaturesCommand(),
-		authcmd.GetBroadcastCommand(),
-		authcmd.GetEncodeCommand(),
-		authcmd.GetDecodeCommand(),
-		authcmd.GetSimulateCmd(),
+		txcmd.GetSignCommand(),
+		txcmd.GetSignBatchCommand(),
+		txcmd.GetMultiSignCommand(),
+		txcmd.GetMultiSignBatchCmd(),
+		txcmd.GetValidateSignaturesCommand(),
+		txcmd.GetBroadcastCommand(),
+		txcmd.GetEncodeCommand(),
+		txcmd.GetDecodeCommand(),
+		txcmd.GetSimulateCmd(),
 	)
 
 	return cmd

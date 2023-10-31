@@ -18,6 +18,7 @@ import (
 	"cosmossdk.io/x/gov"
 	govtestutil "cosmossdk.io/x/gov/client/testutil"
 	govtypes "cosmossdk.io/x/gov/types/v1beta1"
+	txcli "cosmossdk.io/x/tx/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -33,7 +34,6 @@ import (
 	testutilmod "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authcli "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtestutil "github.com/cosmos/cosmos-sdk/x/auth/client/testutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 )
@@ -215,7 +215,7 @@ func (s *CLITestSuite) TestCLIQueryTxCmdByHash() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxCmd()
+			cmd := txcli.QueryTxCmd()
 			cmd.SetArgs(tc.args)
 
 			if len(tc.args) != 0 {
@@ -281,7 +281,7 @@ func (s *CLITestSuite) TestCLIQueryTxCmdByEvents() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxCmd()
+			cmd := txcli.QueryTxCmd()
 			cmd.SetArgs(tc.args)
 
 			if len(tc.args) != 0 {
@@ -324,7 +324,7 @@ func (s *CLITestSuite) TestCLIQueryTxsCmdByEvents() {
 	for _, tc := range testCases {
 		tc := tc
 		s.Run(tc.name, func() {
-			cmd := authcli.QueryTxsByEventsCmd()
+			cmd := txcli.QueryTxsByEventsCmd()
 
 			if len(tc.args) != 0 {
 				s.Require().Contains(fmt.Sprint(cmd), tc.expCmdOutput)
@@ -760,7 +760,7 @@ func (s *CLITestSuite) TestSignBatchMultisig() {
 }
 
 func (s *CLITestSuite) TestGetBroadcastCommandOfflineFlag() {
-	cmd := authcli.GetBroadcastCommand()
+	cmd := txcli.GetBroadcastCommand()
 	_ = testutil.ApplyMockIODiscardOutErr(cmd)
 	cmd.SetArgs([]string{fmt.Sprintf("--%s=true", flags.FlagOffline), ""})
 
@@ -775,7 +775,7 @@ func (s *CLITestSuite) TestGetBroadcastCommandWithoutOfflineFlag() {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
 
-	cmd := authcli.GetBroadcastCommand()
+	cmd := txcli.GetBroadcastCommand()
 	_, out := testutil.ApplyMockIO(cmd)
 
 	// Create new file with tx

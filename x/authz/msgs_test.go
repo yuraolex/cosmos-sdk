@@ -21,7 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
+	"cosmossdk.io/x/auth/migrations/legacytx"
 )
 
 func TestMsgGrantGetAuthorization(t *testing.T) {

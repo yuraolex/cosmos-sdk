@@ -1,6 +1,7 @@
 package genutil
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	cfg "github.com/cometbft/cometbft/config"
 
@@ -96,9 +98,25 @@ func CollectTxs(cdc codec.JSONCodec, txJSONDecoder sdk.TxDecoder, moniker, genTx
 	// addresses and IPs (and port) validator server info
 	var addressesIPs []string
 
-	// TODO (https://github.com/cosmos/cosmos-sdk/issues/17815):
-	// Examine CPU and RAM profiles to see if we can parsing
-	// and ValidateAndGetGenTx concurrent.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	type txIPErr struct {
+		tx  sdk.Tx
+		ip  string
+		err error
+	}
+	txIPErrCh := make(chan *txIPErr, len(fos))
+
+	settings := &collectTxSettings{
+		txJSONDecoder: txJSONDecoder,
+		moniker:       moniker,
+		balancesMap:   balancesMap,
+		valAddrCodec:  valAddrCodec,
+		validator:     validator,
+	}
+
+	wg := new(sync.WaitGroup)
 	for _, fo := range fos {
 		if fo.IsDir() {
 			continue
@@ -107,72 +125,41 @@ func CollectTxs(cdc codec.JSONCodec, txJSONDecoder sdk.TxDecoder, moniker, genTx
 			continue
 		}
 
-		// get the genTx
-		jsonRawTx, err := os.ReadFile(filepath.Join(genTxsDir, fo.Name()))
-		if err != nil {
-			return appGenTxs, persistentPeers, err
-		}
+		// Process each file's Tx concurrently!
+		wg.Add(1)
+		go func(ctx context.Context, path string) {
+			defer wg.Done()
 
-		genTx, err := types.ValidateAndGetGenTx(jsonRawTx, txJSONDecoder, validator)
-		if err != nil {
-			return appGenTxs, persistentPeers, err
-		}
-
-		appGenTxs = append(appGenTxs, genTx)
-
-		// the memo flag is used to store
-		// the ip and node-id, for example this may be:
-		// "528fd3df22b31f4969b05652bfe8f0fe921321d5@192.168.2.37:26656"
-
-		memoTx, ok := genTx.(sdk.TxWithMemo)
-		if !ok {
-			return appGenTxs, persistentPeers, fmt.Errorf("expected TxWithMemo, got %T", genTx)
-		}
-		nodeAddrIP := memoTx.GetMemo()
-
-		// genesis transactions must be single-message
-		msgs := genTx.GetMsgs()
-
-		// TODO abstract out staking message validation back to staking
-		msg := msgs[0].(*stakingtypes.MsgCreateValidator)
-
-		// validate validator addresses and funds against the accounts in the state
-		valAddr, err := valAddrCodec.StringToBytes(msg.ValidatorAddress)
-		if err != nil {
-			return appGenTxs, persistentPeers, err
-		}
-
-		valAccAddr := sdk.AccAddress(valAddr).String()
-
-		delBal, delOk := balancesMap[valAccAddr]
-		if !delOk {
-			_, file, no, ok := runtime.Caller(1)
-			if ok {
-				fmt.Printf("CollectTxs-1, called from %s#%d\n", file, no)
+			// Do nothing if the context was already cancelled.
+			if err := ctx.Err(); err != nil {
+				return
 			}
 
-			return appGenTxs, persistentPeers, fmt.Errorf("account %s balance not in genesis state: %+v", valAccAddr, balancesMap)
-		}
-
-		_, valOk := balancesMap[valAccAddr]
-		if !valOk {
-			_, file, no, ok := runtime.Caller(1)
-			if ok {
-				fmt.Printf("CollectTxs-2, called from %s#%d - %s\n", file, no, sdk.AccAddress(msg.ValidatorAddress).String())
+			tx, ip, err := parseTxFromFile(ctx, path, settings)
+			if err != nil && err != context.Canceled {
+				cancel()
 			}
-			return appGenTxs, persistentPeers, fmt.Errorf("account %s balance not in genesis state: %+v", valAddr, balancesMap)
+			txIPErrCh <- &txIPErr{tx: tx, ip: ip, err: err}
+
+		}(ctx, filepath.Join(genTxsDir, fo.Name()))
+	}
+
+	go func() {
+		wg.Wait()
+		close(txIPErrCh)
+	}()
+
+	for txIP := range txIPErrCh {
+		tx, ip, err := txIP.tx, txIP.ip, txIP.err
+		if err != nil {
+			return appGenTxs, persistentPeers, err
+		}
+		if tx != nil {
+			appGenTxs = append(appGenTxs, tx)
 		}
 
-		if delBal.GetCoins().AmountOf(msg.Value.Denom).LT(msg.Value.Amount) {
-			return appGenTxs, persistentPeers, fmt.Errorf(
-				"insufficient fund for delegation %v: %v < %v",
-				delBal.GetAddress(), delBal.GetCoins().AmountOf(msg.Value.Denom), msg.Value.Amount,
-			)
-		}
-
-		// exclude itself from persistent peers
-		if msg.Description.Moniker != moniker {
-			addressesIPs = append(addressesIPs, nodeAddrIP)
+		if ip != "" {
+			addressesIPs = append(addressesIPs, ip)
 		}
 	}
 
@@ -180,4 +167,92 @@ func CollectTxs(cdc codec.JSONCodec, txJSONDecoder sdk.TxDecoder, moniker, genTx
 	persistentPeers = strings.Join(addressesIPs, ",")
 
 	return appGenTxs, persistentPeers, nil
+}
+
+type collectTxSettings struct {
+	txJSONDecoder sdk.TxDecoder
+	moniker       string
+	balancesMap   map[string]bankexported.GenesisBalance
+	valAddrCodec  sdkruntime.ValidatorAddressCodec
+	validator     types.MessageValidator
+}
+
+func parseTxFromFile(ctx context.Context, path string, settings *collectTxSettings) (tx sdk.Tx, ip string, err error) {
+	// Firstly check if the context was cancelled.
+	if err := ctx.Err(); err != nil {
+		return nil, "", err
+	}
+
+	// get the genTx
+	jsonRawTx, err := os.ReadFile(path)
+	if err != nil {
+		return nil, ip, err
+	}
+
+	txJSONDecoder, moniker, balancesMap := settings.txJSONDecoder, settings.moniker, settings.balancesMap
+	validator, valAddrCodec := settings.validator, settings.valAddrCodec
+
+	genTx, err := types.ValidateAndGetGenTx(jsonRawTx, txJSONDecoder, validator)
+	if err != nil {
+		return nil, ip, err
+	}
+
+	tx = genTx
+
+	// the memo flag is used to store
+	// the ip and node-id, for example this may be:
+	// "528fd3df22b31f4969b05652bfe8f0fe921321d5@192.168.2.37:26656"
+
+	memoTx, ok := genTx.(sdk.TxWithMemo)
+	if !ok {
+		return tx, ip, fmt.Errorf("expected TxWithMemo, got %T", genTx)
+	}
+	nodeAddrIP := memoTx.GetMemo()
+
+	// genesis transactions must be single-message
+	msgs := genTx.GetMsgs()
+
+	// TODO abstract out staking message validation back to staking
+	msg := msgs[0].(*stakingtypes.MsgCreateValidator)
+
+	// validate validator addresses and funds against the accounts in the state
+	valAddr, err := valAddrCodec.StringToBytes(msg.ValidatorAddress)
+	if err != nil {
+		return tx, ip, err
+	}
+
+	valAccAddr := sdk.AccAddress(valAddr).String()
+
+	delBal, delOk := balancesMap[valAccAddr]
+	if !delOk {
+		_, file, no, ok := runtime.Caller(1)
+		if ok {
+			fmt.Printf("CollectTxs-1, called from %s#%d\n", file, no)
+		}
+
+		return tx, ip, fmt.Errorf("account %s balance not in genesis state: %+v", valAccAddr, balancesMap)
+	}
+
+	_, valOk := balancesMap[valAccAddr]
+	if !valOk {
+		_, file, no, ok := runtime.Caller(1)
+		if ok {
+			fmt.Printf("CollectTxs-2, called from %s#%d - %s\n", file, no, sdk.AccAddress(msg.ValidatorAddress).String())
+		}
+		return tx, ip, fmt.Errorf("account %s balance not in genesis state: %+v", valAddr, balancesMap)
+	}
+
+	if delBal.GetCoins().AmountOf(msg.Value.Denom).LT(msg.Value.Amount) {
+		return tx, ip, fmt.Errorf(
+			"insufficient fund for delegation %v: %v < %v",
+			delBal.GetAddress(), delBal.GetCoins().AmountOf(msg.Value.Denom), msg.Value.Amount,
+		)
+	}
+
+	// exclude itself from persistent peers
+	if msg.Description.Moniker != moniker {
+		ip = nodeAddrIP
+	}
+
+	return tx, ip, nil
 }

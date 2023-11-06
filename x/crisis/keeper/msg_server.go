@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	govtypes "cosmossdk.io/x/gov/types"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -15,7 +16,7 @@ var _ types.MsgServer = &Keeper{}
 
 // VerifyInvariant implements MsgServer.VerifyInvariant method.
 // It defines a method to verify a particular invariant.
-func (k *Keeper) VerifyInvariant(goCtx context.Context, msg *types.MsgVerifyInvariant) (*types.MsgVerifyInvariantResponse, error) {
+func (k *Keeper) VerifyInvariant(ctx context.Context, msg *types.MsgVerifyInvariant) (*types.MsgVerifyInvariantResponse, error) {
 	if msg.Sender == "" {
 		return nil, sdkerrors.ErrInvalidAddress.Wrap("empty address string is not allowed")
 	}
@@ -24,8 +25,7 @@ func (k *Keeper) VerifyInvariant(goCtx context.Context, msg *types.MsgVerifyInva
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid sender address: %s", err)
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	params, err := k.ConstantFee.Get(goCtx)
+	params, err := k.ConstantFee.Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,8 @@ func (k *Keeper) VerifyInvariant(goCtx context.Context, msg *types.MsgVerifyInva
 	}
 
 	// use a cached context to avoid gas costs during invariants
-	cacheCtx, _ := ctx.CacheContext()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cacheCtx, _ := sdkCtx.CacheContext()
 
 	found := false
 	msgFullRoute := msg.FullInvariantRoute()
@@ -61,10 +62,10 @@ func (k *Keeper) VerifyInvariant(goCtx context.Context, msg *types.MsgVerifyInva
 		// blockchain thus the constant fee will have never been deducted. Thus no refund is required.
 
 		// TODO replace with circuit breaker
-		panic(res)
+		panic(errors.Wrap(baseapp.IrrecoverablePanic, res))
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeInvariant,
 			sdk.NewAttribute(types.AttributeKeyRoute, msg.InvariantRoute),

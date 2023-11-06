@@ -8,8 +8,10 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	storetypes "cosmossdk.io/core/store"
+	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -107,11 +109,9 @@ func (k *Keeper) AssertInvariants(ctx context.Context) {
 
 		invCtx, _ := sdkCtx.CacheContext()
 		if res, stop := ir.Invar(invCtx); stop {
-			// TODO: Include app name as part of context to allow for this to be
-			// variable.
-			panic(fmt.Errorf("invariant broken: %s\n"+
+			panic(errors.Wrap(baseapp.IrrecoverablePanic, fmt.Sprintf("invariant broken: %s\n"+
 				"\tCRITICAL please submit the following transaction:\n"+
-				"\t\t tx crisis invariant-broken %s %s", res, ir.ModuleName, ir.Route))
+				"\t\t tx crisis invariant-broken %s %s", res, ir.ModuleName, ir.Route)))
 		}
 	}
 

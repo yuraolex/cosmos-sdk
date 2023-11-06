@@ -7,9 +7,12 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 
+	"github.com/cockroachdb/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+var IrrecoverablePanic = errors.New("irrecoverable panic")
 
 // RecoveryHandler handles recovery() object.
 // Return a non-nil error if recoveryObj was processed.
@@ -24,6 +27,12 @@ type recoveryMiddleware func(recoveryObj interface{}) (recoveryMiddleware, error
 // processRecovery processes recoveryMiddleware chain for recovery() object.
 // Chain processing stops on non-nil error or when chain is processed.
 func processRecovery(recoveryObj interface{}, middleware recoveryMiddleware) error {
+	if err, ok := recoveryObj.(error); ok {
+		if errors.Is(err, IrrecoverablePanic) {
+			panic(err)
+		}
+	}
+
 	if middleware == nil {
 		return nil
 	}

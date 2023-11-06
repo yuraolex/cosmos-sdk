@@ -3,7 +3,6 @@ package accounts
 import (
 	"encoding/json"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -78,14 +77,13 @@ func (AppModule) ValidateGenesis(jsonCodec codec.JSONCodec, config client.TxEnco
 	return nil
 }
 
-func (m AppModule) InitGenesis(ctx sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
+func (m AppModule) InitGenesis(ctx sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) {
 	gs := &v1.GenesisState{}
 	jsonCodec.MustUnmarshalJSON(message, gs)
 	err := m.k.ImportState(ctx, gs)
 	if err != nil {
 		panic(err)
 	}
-	return nil
 }
 
 func (m AppModule) ExportGenesis(ctx sdk.Context, jsonCodec codec.JSONCodec) json.RawMessage {

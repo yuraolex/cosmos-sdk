@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/event"
 	"cosmossdk.io/core/transaction"
-	"cosmossdk.io/server/v2/core/event"
 	"cosmossdk.io/server/v2/core/store"
 )
 

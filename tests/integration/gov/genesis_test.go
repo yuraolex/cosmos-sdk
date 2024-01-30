@@ -6,11 +6,13 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/assert"
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	_ "cosmossdk.io/x/auth"
 	authkeeper "cosmossdk.io/x/auth/keeper"
 	authtypes "cosmossdk.io/x/auth/types"
@@ -77,11 +79,11 @@ func TestImportExportQueues(t *testing.T) {
 
 	ctx = s1.app.BaseApp.NewContext(false)
 	// Create two proposals, put the second into the voting period
-	proposal1, err := s1.GovKeeper.SubmitProposal(ctx, []sdk.Msg{mkTestLegacyContent(t)}, "", "test", "description", addrs[0], false)
+	proposal1, err := s1.GovKeeper.SubmitProposal(ctx, []sdk.Msg{mkTestLegacyContent(t)}, "", "test", "description", addrs[0], v1.ProposalType_PROPOSAL_TYPE_STANDARD)
 	assert.NilError(t, err)
 	proposalID1 := proposal1.Id
 
-	proposal2, err := s1.GovKeeper.SubmitProposal(ctx, []sdk.Msg{mkTestLegacyContent(t)}, "", "test", "description", addrs[0], false)
+	proposal2, err := s1.GovKeeper.SubmitProposal(ctx, []sdk.Msg{mkTestLegacyContent(t)}, "", "test", "description", addrs[0], v1.ProposalType_PROPOSAL_TYPE_STANDARD)
 	assert.NilError(t, err)
 	proposalID2 := proposal2.Id
 
@@ -195,4 +197,30 @@ func clearDB(t *testing.T, db *dbm.MemDB) {
 	for _, k := range keys {
 		assert.NilError(t, db.Delete(k))
 	}
+}
+
+func TestImportExportQueues_ErrorUnconsistentState(t *testing.T) {
+	suite := createTestSuite(t)
+	app := suite.app
+	ctx := app.BaseApp.NewContext(false)
+	require.Panics(t, func() {
+		gov.InitGenesis(ctx, suite.AccountKeeper, suite.BankKeeper, suite.GovKeeper, &v1.GenesisState{
+			Deposits: v1.Deposits{
+				{
+					ProposalId: 1234,
+					Depositor:  "me",
+					Amount: sdk.Coins{
+						sdk.NewCoin(
+							"stake",
+							sdkmath.NewInt(1234),
+						),
+					},
+				},
+			},
+		})
+	})
+	gov.InitGenesis(ctx, suite.AccountKeeper, suite.BankKeeper, suite.GovKeeper, v1.DefaultGenesisState())
+	genState, err := gov.ExportGenesis(ctx, suite.GovKeeper)
+	require.NoError(t, err)
+	require.Equal(t, genState, v1.DefaultGenesisState())
 }

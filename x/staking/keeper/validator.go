@@ -34,36 +34,39 @@ func (k Keeper) GetValidator(ctx context.Context, addr sdk.ValAddress) (validato
 	return validator, nil
 }
 
-func (k Keeper) mustGetValidator(ctx context.Context, addr sdk.ValAddress) types.Validator {
-	validator, err := k.GetValidator(ctx, addr)
-	if err != nil {
-		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
-	}
-
-	return validator
-}
-
 // GetValidatorByConsAddr gets a single validator by consensus address
 func (k Keeper) GetValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) (validator types.Validator, err error) {
 	opAddr, err := k.ValidatorByConsensusAddress.Get(ctx, consAddr)
-	if err != nil && !errors.Is(err, collections.ErrNotFound) {
-		return validator, err
+	if err != nil {
+		// if the validator not found try to find it in the map of `OldToNewConsKeyMap` because validator may've rotated it's key.
+		if !errors.Is(err, collections.ErrNotFound) {
+			return types.Validator{}, err
+		}
+
+		newConsAddr, err := k.OldToNewConsKeyMap.Get(ctx, consAddr.Bytes())
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				return types.Validator{}, types.ErrNoValidatorFound
+			}
+			return types.Validator{}, err
+		}
+
+		operatorAddr, err := k.ValidatorByConsensusAddress.Get(ctx, newConsAddr)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				return types.Validator{}, types.ErrNoValidatorFound
+			}
+			return types.Validator{}, err
+		}
+
+		opAddr = operatorAddr
 	}
 
 	if opAddr == nil {
-		return validator, types.ErrNoValidatorFound
+		return types.Validator{}, types.ErrNoValidatorFound
 	}
 
 	return k.GetValidator(ctx, opAddr)
-}
-
-func (k Keeper) mustGetValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) types.Validator {
-	validator, err := k.GetValidatorByConsAddr(ctx, consAddr)
-	if err != nil {
-		panic(fmt.Errorf("validator with consensus-Address %s not found", consAddr))
-	}
-
-	return validator
 }
 
 // SetValidator sets the main record holding validator details
@@ -317,7 +320,10 @@ func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validat
 	i := 0
 	for ; iterator.Valid() && i < int(maxValidators); iterator.Next() {
 		address := iterator.Value()
-		validator := k.mustGetValidator(ctx, address)
+		validator, err := k.GetValidator(ctx, address)
+		if err != nil {
+			return nil, fmt.Errorf("validator record not found for address: %X", address)
+		}
 
 		if validator.IsBonded() {
 			validators[i] = validator
@@ -377,13 +383,19 @@ func (k Keeper) GetLastValidators(ctx context.Context) (validators []types.Valid
 	if err != nil {
 		return nil, err
 	}
-	validators = make([]types.Validator, maxValidators)
 
 	i := 0
+	validators = make([]types.Validator, maxValidators)
+
 	err = k.LastValidatorPower.Walk(ctx, nil, func(key []byte, _ gogotypes.Int64Value) (bool, error) {
-		// sanity check
+		// Note, we do NOT error here as the MaxValidators param may change via on-chain
+		// governance. In cases where the param is increased, this case should never
+		// be hit. In cases where the param is decreased, we will simply not return
+		// the remainder of the validator set, as the ApplyAndReturnValidatorSetUpdates
+		// call should ensure the validators past the cliff will be moved to the
+		// unbonding set.
 		if i >= int(maxValidators) {
-			panic("more validators than maxValidators found")
+			return true, nil
 		}
 
 		validator, err := k.GetValidator(ctx, key)
@@ -393,6 +405,7 @@ func (k Keeper) GetLastValidators(ctx context.Context) (validators []types.Valid
 
 		validators[i] = validator
 		i++
+
 		return false, nil
 	})
 	if err != nil {

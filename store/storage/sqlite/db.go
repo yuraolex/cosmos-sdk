@@ -10,7 +10,9 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/store/v2"
+	"cosmossdk.io/store/v2/storage"
 )
 
 const (
@@ -40,7 +42,7 @@ const (
 	`
 )
 
-var _ store.VersionedDatabase = (*Database)(nil)
+var _ storage.Database = (*Database)(nil)
 
 type Database struct {
 	storage *sql.DB
@@ -58,7 +60,7 @@ func New(dataDir string) (*Database, error) {
 
 	stmt := `
 	CREATE TABLE IF NOT EXISTS state_storage (
-		id integer not null primary key, 
+		id integer not null primary key,
 		store_key varchar not null,
 		key varchar not null,
 		value varchar not null,
@@ -89,6 +91,10 @@ func (db *Database) Close() error {
 	err := db.storage.Close()
 	db.storage = nil
 	return err
+}
+
+func (db *Database) NewBatch(version uint64) (store.Batch, error) {
+	return NewBatch(db.storage, version)
 }
 
 func (db *Database) GetLatestVersion() (uint64, error) {
@@ -168,29 +174,6 @@ func (db *Database) Get(storeKey string, targetVersion uint64, key []byte) ([]by
 	return nil, nil
 }
 
-func (db *Database) ApplyChangeset(version uint64, cs *store.Changeset) error {
-	b, err := NewBatch(db.storage, version)
-	if err != nil {
-		return err
-	}
-
-	for storeKey, pairs := range cs.Pairs {
-		for _, kvPair := range pairs {
-			if kvPair.Value == nil {
-				if err := b.Delete(storeKey, kvPair.Key); err != nil {
-					return err
-				}
-			} else {
-				if err := b.Set(storeKey, kvPair.Key, kvPair.Value); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return b.Write()
-}
-
 // Prune removes all versions of all keys that are <= the given version. It keeps
 // the latest (non-tombstoned) version of each key/value tuple to handle queries
 // above the prune version. This is analogous to RocksDB full_history_ts_low.
@@ -232,7 +215,7 @@ func (db *Database) Prune(version uint64) error {
 	return nil
 }
 
-func (db *Database) Iterator(storeKey string, version uint64, start, end []byte) (store.Iterator, error) {
+func (db *Database) Iterator(storeKey string, version uint64, start, end []byte) (corestore.Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
 		return nil, store.ErrKeyEmpty
 	}
@@ -244,7 +227,7 @@ func (db *Database) Iterator(storeKey string, version uint64, start, end []byte)
 	return newIterator(db, storeKey, version, start, end, false)
 }
 
-func (db *Database) ReverseIterator(storeKey string, version uint64, start, end []byte) (store.Iterator, error) {
+func (db *Database) ReverseIterator(storeKey string, version uint64, start, end []byte) (corestore.Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
 		return nil, store.ErrKeyEmpty
 	}

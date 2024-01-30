@@ -4,20 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
-	"strings"
 
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 
-	modulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
-	store "cosmossdk.io/core/store"
-	"cosmossdk.io/depinject"
-	authtypes "cosmossdk.io/x/auth/types"
 	govclient "cosmossdk.io/x/gov/client"
 	"cosmossdk.io/x/gov/client/cli"
 	"cosmossdk.io/x/gov/keeper"
@@ -26,7 +18,6 @@ import (
 	v1 "cosmossdk.io/x/gov/types/v1"
 	"cosmossdk.io/x/gov/types/v1beta1"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -35,7 +26,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 )
 
-const ConsensusVersion = 5
+const ConsensusVersion = 6
 
 var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
@@ -80,13 +71,13 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the gov module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (am AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data v1.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", govtypes.ModuleName, err)
 	}
 
-	return v1.ValidateGenesis(&data)
+	return v1.ValidateGenesis(am.ac, &data)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the gov module.
@@ -144,118 +135,8 @@ func NewAppModule(
 	}
 }
 
-// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
-func (am AppModule) IsOnePerModuleType() {}
-
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
-
-func init() {
-	appmodule.Register(
-		&modulev1.Module{},
-		appmodule.Invoke(InvokeAddRoutes, InvokeSetHooks),
-		appmodule.Provide(ProvideModule))
-}
-
-type ModuleInputs struct {
-	depinject.In
-
-	Config           *modulev1.Module
-	Cdc              codec.Codec
-	StoreService     store.KVStoreService
-	ModuleKey        depinject.OwnModuleKey
-	MsgServiceRouter baseapp.MessageRouter
-
-	AccountKeeper govtypes.AccountKeeper
-	BankKeeper    govtypes.BankKeeper
-	StakingKeeper govtypes.StakingKeeper
-	PoolKeeper    govtypes.PoolKeeper
-}
-
-type ModuleOutputs struct {
-	depinject.Out
-
-	Module       appmodule.AppModule
-	Keeper       *keeper.Keeper
-	HandlerRoute v1beta1.HandlerRoute
-}
-
-func ProvideModule(in ModuleInputs) ModuleOutputs {
-	defaultConfig := govtypes.DefaultConfig()
-	if in.Config.MaxTitleLen != 0 {
-		defaultConfig.MaxTitleLen = in.Config.MaxTitleLen
-	}
-	if in.Config.MaxMetadataLen != 0 {
-		defaultConfig.MaxMetadataLen = in.Config.MaxMetadataLen
-	}
-	if in.Config.MaxSummaryLen != 0 {
-		defaultConfig.MaxSummaryLen = in.Config.MaxSummaryLen
-	}
-
-	// default to governance authority if not provided
-	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
-	if in.Config.Authority != "" {
-		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
-	}
-
-	k := keeper.NewKeeper(
-		in.Cdc,
-		in.StoreService,
-		in.AccountKeeper,
-		in.BankKeeper,
-		in.StakingKeeper,
-		in.PoolKeeper,
-		in.MsgServiceRouter,
-		defaultConfig,
-		authority.String(),
-	)
-	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper, in.PoolKeeper)
-	hr := v1beta1.HandlerRoute{Handler: v1beta1.ProposalHandler, RouteKey: govtypes.RouterKey}
-
-	return ModuleOutputs{Module: m, Keeper: k, HandlerRoute: hr}
-}
-
-func InvokeAddRoutes(keeper *keeper.Keeper, routes []v1beta1.HandlerRoute) {
-	if keeper == nil || routes == nil {
-		return
-	}
-
-	// Default route order is a lexical sort by RouteKey.
-	// Explicit ordering can be added to the module config if required.
-	slices.SortFunc(routes, func(x, y v1beta1.HandlerRoute) int {
-		return strings.Compare(x.RouteKey, y.RouteKey)
-	})
-
-	router := v1beta1.NewRouter()
-	for _, r := range routes {
-		router.AddRoute(r.RouteKey, r.Handler)
-	}
-	keeper.SetLegacyRouter(router)
-}
-
-func InvokeSetHooks(keeper *keeper.Keeper, govHooks map[string]govtypes.GovHooksWrapper) error {
-	if keeper == nil || govHooks == nil {
-		return nil
-	}
-
-	// Default ordering is lexical by module name.
-	// Explicit ordering can be added to the module config if required.
-	modNames := maps.Keys(govHooks)
-	order := modNames
-	sort.Strings(order)
-
-	var multiHooks govtypes.MultiGovHooks
-	for _, modName := range order {
-		hook, ok := govHooks[modName]
-		if !ok {
-			return fmt.Errorf("can't find staking hooks for module %s", modName)
-		}
-		multiHooks = append(multiHooks, hook)
-	}
-
-	keeper.SetHooks(multiHooks)
-	return nil
-}
 
 // RegisterInvariants registers module invariants
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
@@ -287,6 +168,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	if err := cfg.RegisterMigration(govtypes.ModuleName, 4, m.Migrate4to5); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/gov from version 4 to 5: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(govtypes.ModuleName, 5, m.Migrate5to6); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/gov from version 5 to 6: %v", err))
 	}
 }
 

@@ -47,9 +47,9 @@ consisting of all the keys provided by name and multisig threshold.`,
 	}
 	f := cmd.Flags()
 	f.String(FlagBechPrefix, sdk.PrefixAccount, "The Bech32 prefix encoding for a key (acc|val|cons)")
-	f.BoolP(FlagAddress, "a", false, "Output the address only (overrides --output)")
-	f.BoolP(FlagPublicKey, "p", false, "Output the public key only (overrides --output)")
-	f.BoolP(FlagDevice, "d", false, "Output the address in a ledger device")
+	f.BoolP(FlagAddress, "a", false, "Output the address only (cannot be used with --output)")
+	f.BoolP(FlagPublicKey, "p", false, "Output the public key only (cannot be used with --output)")
+	f.BoolP(FlagDevice, "d", false, "Output the address in a ledger device (cannot be used with --pubkey)")
 	f.Int(flagMultiSigThreshold, 1, "K out of N required signatures")
 	f.Bool(flagQRCode, false, "Display key address QR code (will be ignored if -a or --address is false)")
 
@@ -71,11 +71,20 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 		}
 	} else {
 		pks := make([]cryptotypes.PubKey, len(args))
-		for i, keyref := range args {
-			k, err := fetchKey(clientCtx.Keyring, keyref, clientCtx.AddressCodec)
-			if err != nil {
-				return fmt.Errorf("%s is not a valid name or address: %w", keyref, err)
+		seenKeys := make(map[string]struct{})
+		for i, keyRef := range args {
+			if _, ok := seenKeys[keyRef]; ok {
+				// we just show warning message instead of return error in case someone relies on this behavior.
+				cmd.PrintErrf("WARNING: duplicate keys found: %s.\n\n", keyRef)
+			} else {
+				seenKeys[keyRef] = struct{}{}
 			}
+
+			k, err := fetchKey(clientCtx.Keyring, keyRef, clientCtx.AddressCodec)
+			if err != nil {
+				return fmt.Errorf("%s is not a valid name or address: %w", keyRef, err)
+			}
+
 			key, err := k.GetPubKey()
 			if err != nil {
 				return err

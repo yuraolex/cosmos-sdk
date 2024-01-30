@@ -557,7 +557,8 @@ func New(l Logger, baseDir string, cfg Config) (NetworkI, error) {
 			WithAccountRetriever(cfg.AccountRetriever).
 			WithAddressCodec(cfg.AddressCodec).
 			WithValidatorAddressCodec(cfg.ValidatorAddressCodec).
-			WithConsensusAddressCodec(cfg.ValidatorAddressCodec)
+			WithConsensusAddressCodec(cfg.ConsensusAddressCodec).
+			WithNodeURI(cmtCfg.RPC.ListenAddress)
 
 		// Provide ChainID here since we can't modify it in the Comet config.
 		ctx.Viper.Set(flags.FlagChainID, cfg.ChainID)
@@ -602,7 +603,7 @@ func New(l Logger, baseDir string, cfg Config) (NetworkI, error) {
 
 	l.Log("started test network at height:", height)
 
-	// Ensure we cleanup incase any test was abruptly halted (e.g. SIGINT) as any
+	// Ensure we cleanup in case any test was abruptly halted (e.g. SIGINT) as any
 	// defer in a test would not be called.
 	trapSignal(network.Cleanup)
 

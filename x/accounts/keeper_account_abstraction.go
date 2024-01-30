@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/anypb"
-
-	account_abstractionv1 "cosmossdk.io/api/cosmos/accounts/interfaces/account_abstraction/v1"
-	accountsv1 "cosmossdk.io/api/cosmos/accounts/v1"
+	account_abstractionv1 "cosmossdk.io/x/accounts/interfaces/account_abstraction/v1"
 	"cosmossdk.io/x/accounts/internal/implementation"
+	v1 "cosmossdk.io/x/accounts/v1"
 )
 
 var (
@@ -19,15 +17,25 @@ var (
 	ErrBundlerPayment = errors.New("bundler payment failed")
 	// ErrExecution is returned when the execution fails.
 	ErrExecution = errors.New("execution failed")
+	// ErrDisallowedTxCompatInBundle is returned when the tx compat
+	// is populated in a bundle.
+	ErrDisallowedTxCompatInBundle = errors.New("tx compat field populated in bundle")
 )
 
 // ExecuteUserOperation handles the execution of an abstracted account UserOperation.
 func (k Keeper) ExecuteUserOperation(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
-) *accountsv1.UserOperationResponse {
-	resp := &accountsv1.UserOperationResponse{}
+	op *v1.UserOperation,
+) *v1.UserOperationResponse {
+	// TxCompat field must not be allowed in a UserOperation sent from a bundle.
+	// Only the runtime can populate this field when an abstracted account sends
+	// a tx (not from a bundle) and this is converted into a UserOperation.
+	if op.TxCompat != nil {
+		return &v1.UserOperationResponse{Error: ErrDisallowedTxCompatInBundle.Error()}
+	}
+
+	resp := &v1.UserOperationResponse{}
 
 	// authenticate
 	authGas, err := k.Authenticate(ctx, bundler, op)
@@ -66,7 +74,7 @@ func (k Keeper) ExecuteUserOperation(
 func (k Keeper) Authenticate(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
+	op *v1.UserOperation,
 ) (gasUsed uint64, err error) {
 	// authenticate
 	gasUsed, err = k.branchExecutor.ExecuteWithGasLimit(ctx, op.AuthenticationGasLimit, func(ctx context.Context) error {
@@ -82,7 +90,7 @@ func (k Keeper) Authenticate(
 func (k Keeper) authenticate(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
+	op *v1.UserOperation,
 ) error {
 	senderAddr, err := k.addressCodec.StringToBytes(op.Sender)
 	if err != nil {
@@ -106,8 +114,8 @@ func (k Keeper) authenticate(
 func (k Keeper) OpExecuteMessages(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
-) (gasUsed uint64, responses []*anypb.Any, err error) {
+	op *v1.UserOperation,
+) (gasUsed uint64, responses []*implementation.Any, err error) {
 	// execute messages, the real operation intent
 	gasUsed, err = k.branchExecutor.ExecuteWithGasLimit(ctx, op.ExecutionGasLimit, func(ctx context.Context) error {
 		responses, err = k.opExecuteMessages(ctx, bundler, op)
@@ -122,8 +130,8 @@ func (k Keeper) OpExecuteMessages(
 func (k Keeper) opExecuteMessages(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
-) (messagesResponse []*anypb.Any, err error) {
+	op *v1.UserOperation,
+) (messagesResponse []*implementation.Any, err error) {
 	senderAddr, err := k.addressCodec.StringToBytes(op.Sender)
 	if err != nil {
 		return nil, err
@@ -159,8 +167,8 @@ func (k Keeper) opExecuteMessages(
 func (k Keeper) PayBundler(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
-) (gasUsed uint64, responses []*anypb.Any, err error) {
+	op *v1.UserOperation,
+) (gasUsed uint64, responses []*implementation.Any, err error) {
 	// pay bundler
 	gasUsed, err = k.branchExecutor.ExecuteWithGasLimit(ctx, op.BundlerPaymentGasLimit, func(ctx context.Context) error {
 		responses, err = k.payBundler(ctx, bundler, op)
@@ -175,8 +183,8 @@ func (k Keeper) PayBundler(
 func (k Keeper) payBundler(
 	ctx context.Context,
 	bundler string,
-	op *accountsv1.UserOperation,
-) (paymentResponses []*anypb.Any, err error) {
+	op *v1.UserOperation,
+) (paymentResponses []*implementation.Any, err error) {
 	// if messages are empty, then there is nothing to do
 	if len(op.BundlerPaymentMessages) == 0 {
 		return nil, nil
@@ -209,7 +217,7 @@ func (k Keeper) payBundler(
 
 // parsePayBundlerResponse parses the bundler response as any into a slice of
 // responses on payment messages.
-func parsePayBundlerResponse(resp any) ([]*anypb.Any, error) {
+func parsePayBundlerResponse(resp any) ([]*implementation.Any, error) {
 	payBundlerResp, ok := resp.(*account_abstractionv1.MsgPayBundlerResponse)
 	// this means the account does not properly implement account abstraction.
 	if payBundlerResp == nil {
@@ -223,7 +231,7 @@ func parsePayBundlerResponse(resp any) ([]*anypb.Any, error) {
 
 // parseExecuteResponse parses the execute response as any into a slice of
 // responses on execution messages.
-func parseExecuteResponse(resp any) ([]*anypb.Any, error) {
+func parseExecuteResponse(resp any) ([]*implementation.Any, error) {
 	executeResp, ok := resp.(*account_abstractionv1.MsgExecuteResponse)
 	// this means the account does not properly implement account abstraction.
 	if executeResp == nil {

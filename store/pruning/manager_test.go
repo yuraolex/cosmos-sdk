@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/v2"
 	"cosmossdk.io/store/v2/commitment"
 	"cosmossdk.io/store/v2/commitment/iavl"
+	dbm "cosmossdk.io/store/v2/db"
+	"cosmossdk.io/store/v2/storage"
 	"cosmossdk.io/store/v2/storage/sqlite"
 )
 
@@ -34,11 +35,12 @@ func (s *PruningTestSuite) SetupTest() {
 		logger = log.NewTestLogger(s.T())
 	}
 
-	ss, err := sqlite.New(s.T().TempDir())
+	sqliteDB, err := sqlite.New(s.T().TempDir())
 	s.Require().NoError(err)
+	ss := storage.NewStorageStore(sqliteDB)
 
 	tree := iavl.NewIavlTree(dbm.NewMemDB(), log.NewNopLogger(), iavl.DefaultConfig())
-	sc, err := commitment.NewCommitStore(map[string]commitment.Tree{"default": tree}, logger)
+	sc, err := commitment.NewCommitStore(map[string]commitment.Tree{"default": tree}, dbm.NewMemDB(), logger)
 	s.Require().NoError(err)
 
 	s.manager = NewManager(logger, ss, sc)
@@ -58,11 +60,11 @@ func (s *PruningTestSuite) TestPruning() {
 
 	latestVersion := uint64(100)
 
-	// write 10 batches
+	// write batches
 	for i := uint64(0); i < latestVersion; i++ {
 		version := i + 1
 
-		cs := store.NewChangeset(map[string]store.KVPairs{defaultStoreKey: {}})
+		cs := store.NewChangesetWithPairs(map[string]store.KVPairs{defaultStoreKey: {}})
 		cs.AddKVPair(defaultStoreKey, store.KVPair{
 			Key:   []byte("key"),
 			Value: []byte(fmt.Sprintf("value%d", version)),
@@ -70,7 +72,7 @@ func (s *PruningTestSuite) TestPruning() {
 		err := s.sc.WriteBatch(cs)
 		s.Require().NoError(err)
 
-		_, err = s.sc.Commit()
+		_, err = s.sc.Commit(version)
 		s.Require().NoError(err)
 
 		err = s.ss.ApplyChangeset(version, cs)
@@ -92,12 +94,12 @@ func (s *PruningTestSuite) TestPruning() {
 	s.Require().Nil(val)
 
 	// check the commitment for the version 96
-	proof, err := s.sc.GetProof(defaultStoreKey, latestVersion-4, []byte("key"))
+	proofOps, err := s.sc.GetProof(defaultStoreKey, latestVersion-4, []byte("key"))
 	s.Require().NoError(err)
-	s.Require().NotNil(proof.GetExist())
+	s.Require().Len(proofOps, 2)
 
 	// check the commitment for the version 95
-	proof, err = s.sc.GetProof(defaultStoreKey, latestVersion-5, []byte("key"))
+	proofOps, err = s.sc.GetProof(defaultStoreKey, latestVersion-5, []byte("key"))
 	s.Require().Error(err)
-	s.Require().Nil(proof)
+	s.Require().Nil(proofOps)
 }

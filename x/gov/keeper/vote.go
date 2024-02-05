@@ -18,11 +18,14 @@ func (k Keeper) AddVote(ctx context.Context, proposalID uint64, voterAddr sdk.Ac
 	// get proposal
 	proposal, err := k.Proposals.Get(ctx, proposalID)
 	if err != nil {
+		if stderrors.Is(err, collections.ErrNotFound) {
+			return errors.Wrapf(types.ErrInactiveProposal, "%d", proposalID)
+		}
+
 		return err
 	}
-	inVotingPeriod := proposal.Status == v1.StatusVotingPeriod
 
-	if !inVotingPeriod {
+	if proposal.Status != v1.StatusVotingPeriod {
 		return errors.Wrapf(types.ErrInactiveProposal, "%d", proposalID)
 	}
 

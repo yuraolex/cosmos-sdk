@@ -33,12 +33,9 @@ func TestUnregisteredProposal_InactiveProposalFails(t *testing.T) {
 		&v1.Proposal{}, // invalid proposal message
 	}, 1, startTime, startTime, "", "Unsupported proposal", "Unsupported proposal", addrs[0], v1.ProposalType_PROPOSAL_TYPE_STANDARD)
 	require.NoError(t, err)
+	proposal.DepositEndTime = &endTime
 
-	err = suite.GovKeeper.SetProposal(ctx, proposal)
-	require.NoError(t, err)
-
-	// manually set proposal in inactive proposal queue
-	err = suite.GovKeeper.InactiveProposalsQueue.Set(ctx, collections.Join(endTime, proposal.Id), proposal.Id)
+	err = suite.GovKeeper.Proposals.Set(ctx, proposal.Id, proposal)
 	require.NoError(t, err)
 
 	err = gov.EndBlocker(ctx, suite.GovKeeper)
@@ -62,11 +59,7 @@ func TestUnregisteredProposal_ActiveProposalFails(t *testing.T) {
 	proposal.Status = v1.StatusVotingPeriod
 	proposal.VotingEndTime = &endTime
 
-	err = suite.GovKeeper.SetProposal(ctx, proposal)
-	require.NoError(t, err)
-
-	// manually set proposal in active proposal queue
-	err = suite.GovKeeper.ActiveProposalsQueue.Set(ctx, collections.Join(endTime, proposal.Id), proposal.Id)
+	err = suite.GovKeeper.Proposals.Set(ctx, proposal.Id, proposal)
 	require.NoError(t, err)
 
 	err = gov.EndBlocker(ctx, suite.GovKeeper)

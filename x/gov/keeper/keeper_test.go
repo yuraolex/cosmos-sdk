@@ -105,7 +105,7 @@ func TestIncrementProposalNumber(t *testing.T) {
 	require.Equal(t, uint64(6), proposal6.Id)
 }
 
-func TestProposalQueues(t *testing.T) {
+func TestProposalIndexes(t *testing.T) {
 	govKeeper, mocks, _, ctx := setupGovKeeper(t)
 	authKeeper := mocks.acctKeeper
 
@@ -119,18 +119,26 @@ func TestProposalQueues(t *testing.T) {
 	proposal, err := govKeeper.SubmitProposal(ctx, tp, "", "test", "summary", addrBz, v1.ProposalType_PROPOSAL_TYPE_STANDARD)
 	require.NoError(t, err)
 
-	has, err := govKeeper.InactiveProposalsQueue.Has(ctx, collections.Join(*proposal.DepositEndTime, proposal.Id))
+	it, err := govKeeper.Proposals.Indexes.StatusDepositEndTime.MatchExact(ctx, collections.Join(int32(v1.StatusDepositPeriod), *proposal.DepositEndTime))
 	require.NoError(t, err)
-	require.True(t, has)
+	var totalProposalCount int
+	for ; it.Valid(); it.Next() {
+		totalProposalCount++
+	}
+	require.Equal(t, 1, totalProposalCount)
 
 	require.NoError(t, govKeeper.ActivateVotingPeriod(ctx, proposal))
 
 	proposal, err = govKeeper.Proposals.Get(ctx, proposal.Id)
 	require.Nil(t, err)
 
-	has, err = govKeeper.ActiveProposalsQueue.Has(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id))
+	it, err = govKeeper.Proposals.Indexes.StatusVotingEndTime.MatchExact(ctx, collections.Join(int32(v1.StatusVotingPeriod), *proposal.VotingEndTime))
 	require.NoError(t, err)
-	require.True(t, has)
+	totalProposalCount = 0
+	for ; it.Valid(); it.Next() {
+		totalProposalCount++
+	}
+	require.Equal(t, 1, totalProposalCount)
 }
 
 func TestSetHooks(t *testing.T) {

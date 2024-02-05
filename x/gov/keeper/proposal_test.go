@@ -17,66 +17,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// TODO(tip): remove this
-func (suite *KeeperTestSuite) TestGetSetProposal() {
-	testCases := map[string]struct {
-		proposalType v1.ProposalType
-	}{
-		"unspecified proposal type": {},
-		"regular proposal": {
-			proposalType: v1.ProposalType_PROPOSAL_TYPE_STANDARD,
-		},
-		"expedited proposal": {
-			proposalType: v1.ProposalType_PROPOSAL_TYPE_EXPEDITED,
-		},
-	}
-
-	for _, tc := range testCases {
-		tp := TestProposal
-		proposal, err := suite.govKeeper.SubmitProposal(suite.ctx, tp, "", "test", "summary", suite.addrs[0], tc.proposalType)
-		suite.Require().NoError(err)
-		proposalID := proposal.Id
-		err = suite.govKeeper.SetProposal(suite.ctx, proposal)
-		suite.Require().NoError(err)
-
-		gotProposal, err := suite.govKeeper.Proposals.Get(suite.ctx, proposalID)
-		suite.Require().Nil(err)
-		suite.Require().Equal(proposal, gotProposal)
-	}
-}
-
-// TODO(tip): remove this
-func (suite *KeeperTestSuite) TestDeleteProposal() {
-	testCases := map[string]struct {
-		proposalType v1.ProposalType
-	}{
-		"unspecified proposal type": {},
-		"regular proposal": {
-			proposalType: v1.ProposalType_PROPOSAL_TYPE_STANDARD,
-		},
-		"expedited proposal": {
-			proposalType: v1.ProposalType_PROPOSAL_TYPE_EXPEDITED,
-		},
-	}
-
-	for _, tc := range testCases {
-		// delete non-existing proposal
-		suite.Require().ErrorIs(suite.govKeeper.DeleteProposal(suite.ctx, 10), collections.ErrNotFound)
-
-		tp := TestProposal
-		proposal, err := suite.govKeeper.SubmitProposal(suite.ctx, tp, "", "test", "summary", suite.addrs[0], tc.proposalType)
-		suite.Require().NoError(err)
-		proposalID := proposal.Id
-		err = suite.govKeeper.SetProposal(suite.ctx, proposal)
-		suite.Require().NoError(err)
-
-		suite.Require().NotPanics(func() {
-			err := suite.govKeeper.DeleteProposal(suite.ctx, proposalID)
-			suite.Require().NoError(err)
-		}, "")
-	}
-}
-
 func (suite *KeeperTestSuite) TestActivateVotingPeriod() {
 	testCases := []struct {
 		name         string
@@ -100,15 +40,11 @@ func (suite *KeeperTestSuite) TestActivateVotingPeriod() {
 		proposal, err = suite.govKeeper.Proposals.Get(suite.ctx, proposal.Id)
 		suite.Require().Nil(err)
 		suite.Require().True(proposal.VotingStartTime.Equal(suite.ctx.HeaderInfo().Time))
-
-		has, err := suite.govKeeper.ActiveProposalsQueue.Has(suite.ctx, collections.Join(*proposal.VotingEndTime, proposal.Id))
-		suite.Require().NoError(err)
-		suite.Require().True(has)
-		suite.Require().NoError(suite.govKeeper.DeleteProposal(suite.ctx, proposal.Id))
+		suite.Require().NoError(suite.govKeeper.Proposals.Remove(suite.ctx, proposal.Id))
 	}
 }
 
-func (suite *KeeperTestSuite) TestDeleteProposalInVotingPeriod() {
+func (suite *KeeperTestSuite) TestRemoveProposalInVotingPeriod() {
 	testCases := []struct {
 		name         string
 		proposalType v1.ProposalType
@@ -131,16 +67,12 @@ func (suite *KeeperTestSuite) TestDeleteProposalInVotingPeriod() {
 		suite.Require().Nil(err)
 		suite.Require().True(proposal.VotingStartTime.Equal(suite.ctx.HeaderInfo().Time))
 
-		has, err := suite.govKeeper.ActiveProposalsQueue.Has(suite.ctx, collections.Join(*proposal.VotingEndTime, proposal.Id))
-		suite.Require().NoError(err)
-		suite.Require().True(has)
-
 		// add vote
 		voteOptions := []*v1.WeightedVoteOption{{Option: v1.OptionYes, Weight: "1.0"}}
 		err = suite.govKeeper.AddVote(suite.ctx, proposal.Id, suite.addrs[0], voteOptions, "")
 		suite.Require().NoError(err)
 
-		suite.Require().NoError(suite.govKeeper.DeleteProposal(suite.ctx, proposal.Id))
+		suite.Require().NoError(suite.govKeeper.Proposals.Remove(suite.ctx, proposal.Id))
 
 		// add vote but proposal is deleted along with its VotingPeriodProposalKey
 		err = suite.govKeeper.AddVote(suite.ctx, proposal.Id, suite.addrs[0], voteOptions, "")
@@ -274,7 +206,7 @@ func (suite *KeeperTestSuite) TestCancelProposal() {
 				suite.Require().Nil(err)
 
 				proposal2.Status = v1.ProposalStatus_PROPOSAL_STATUS_PASSED
-				err = suite.govKeeper.SetProposal(suite.ctx, proposal2)
+				err = suite.govKeeper.Proposals.Set(suite.ctx, proposal2.Id, proposal2)
 				suite.Require().NoError(err)
 				return proposal2ID, suite.addrs[1].String()
 			},

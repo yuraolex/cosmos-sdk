@@ -35,7 +35,7 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 					return false, err
 				}
 
-				if err = keeper.DeleteProposal(ctx, proposalID); err != nil {
+				if err = keeper.Proposals.Remove(ctx, proposalID); err != nil {
 					return false, err
 				}
 
@@ -45,7 +45,7 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 			return false, err
 		}
 
-		if err = keeper.DeleteProposal(ctx, proposalID); err != nil {
+		if err = keeper.Proposals.Remove(ctx, proposalID); err != nil {
 			return false, err
 		}
 

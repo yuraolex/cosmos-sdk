@@ -25,7 +25,7 @@ func TestMigrateStore(t *testing.T) {
 	storeService := runtime.NewKVStoreService(govKey)
 	sb := collections.NewSchemaBuilder(storeService)
 	paramsCollection := collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[v1.Params](cdc))
-	proposalCollection := collections.NewMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[v1.Proposal](cdc))
+	proposalCollection := collections.NewIndexedMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[v1.Proposal](cdc), v1.NewProposalIndexes(sb))
 
 	// set defaults without newly added fields
 	previousParams := v1.DefaultParams()
@@ -37,7 +37,7 @@ func TestMigrateStore(t *testing.T) {
 	require.NoError(t, err)
 
 	// Run migrations.
-	err = v6.MigrateStore(ctx, paramsCollection, proposalCollection)
+	err = v6.MigrateStore(ctx, storeService, paramsCollection, proposalCollection)
 	require.NoError(t, err)
 
 	// Check params
@@ -47,4 +47,7 @@ func TestMigrateStore(t *testing.T) {
 	require.Equal(t, v1.DefaultParams().ProposalCancelMaxPeriod, newParams.ProposalCancelMaxPeriod)
 	require.Equal(t, v1.DefaultParams().OptimisticAuthorizedAddresses, newParams.OptimisticAuthorizedAddresses)
 	require.Equal(t, v1.DefaultParams().OptimisticRejectedThreshold, newParams.OptimisticRejectedThreshold)
+
+	// Check proposals
+	// TODO: add mock proposals and check if they were migrated correctly
 }

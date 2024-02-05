@@ -200,8 +200,7 @@ func (k Keeper) CancelProposal(ctx context.Context, proposalID uint64, proposer 
 		}
 	}
 
-	err = k.DeleteProposal(ctx, proposal.Id)
-	if err != nil {
+	if err = k.Proposals.Remove(ctx, proposal.Id); err != nil {
 		return err
 	}
 
@@ -212,23 +211,6 @@ func (k Keeper) CancelProposal(ctx context.Context, proposalID uint64, proposer 
 	)
 
 	return nil
-}
-
-// DeleteProposal deletes a proposal from store.
-func (k Keeper) DeleteProposal(ctx context.Context, proposalID uint64) error {
-	proposal, err := k.Proposals.Get(ctx, proposalID)
-	if err != nil {
-		return err
-	}
-
-	if proposal.VotingEndTime != nil {
-		err = k.VotingPeriodProposals.Remove(ctx, proposalID)
-		if err != nil {
-			return err
-		}
-	}
-
-	return k.Proposals.Remove(ctx, proposalID)
 }
 
 // ActivateVotingPeriod activates the voting period of a proposal

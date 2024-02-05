@@ -163,7 +163,7 @@ func NewProposalIndexes(sb *collections.SchemaBuilder) ProposalIndexes {
 	return ProposalIndexes{
 		StatusDepositEndTime: indexes.NewMulti(
 			sb,
-			types.ProposalIndexKey,
+			types.ProposalEndDepositPeriodIndexKey,
 			"proposal_by_status_and_deposit_end_time",
 			collections.PairKeyCodec(collections.Int32Key, sdk.TimeKey),
 			collections.Uint64Key,
@@ -177,7 +177,7 @@ func NewProposalIndexes(sb *collections.SchemaBuilder) ProposalIndexes {
 		),
 		StatusVotingEndTime: indexes.NewMulti(
 			sb,
-			types.ProposalIndexKey,
+			types.ProposalEndVotingPeriodIndexKey,
 			"proposal_by_status_and_voting_end_time",
 			collections.PairKeyCodec(collections.Int32Key, sdk.TimeKey),
 			collections.Uint64Key,

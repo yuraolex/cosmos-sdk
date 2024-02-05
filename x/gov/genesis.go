@@ -56,20 +56,7 @@ func InitGenesis(ctx context.Context, ak types.AccountKeeper, bk types.BankKeepe
 	}
 
 	for _, proposal := range data.Proposals {
-		switch proposal.Status {
-		case v1.StatusDepositPeriod:
-			err := k.InactiveProposalsQueue.Set(ctx, collections.Join(*proposal.DepositEndTime, proposal.Id), proposal.Id)
-			if err != nil {
-				panic(err)
-			}
-		case v1.StatusVotingPeriod:
-			err := k.ActiveProposalsQueue.Set(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id), proposal.Id)
-			if err != nil {
-				panic(err)
-			}
-		}
-		err := k.SetProposal(ctx, *proposal)
-		if err != nil {
+		if err := k.Proposals.Set(ctx, proposal.Id, *proposal); err != nil {
 			panic(err)
 		}
 	}

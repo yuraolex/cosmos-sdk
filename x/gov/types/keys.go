@@ -17,8 +17,6 @@ const (
 
 var (
 	ProposalsKeyPrefix            = collections.NewPrefix(0)  // ProposalsKeyPrefix stores the proposals raw bytes.
-	ActiveProposalQueuePrefix     = collections.NewPrefix(1)  // ActiveProposalQueuePrefix stores the active proposals.
-	InactiveProposalQueuePrefix   = collections.NewPrefix(2)  // InactiveProposalQueuePrefix stores the inactive proposals.
 	ProposalIDKey                 = collections.NewPrefix(3)  // ProposalIDKey stores the sequence representing the next proposal ID.
 	VotingPeriodProposalKeyPrefix = collections.NewPrefix(4)  // VotingPeriodProposalKeyPrefix stores which proposals are on voting period.
 	DepositsKeyPrefix             = collections.NewPrefix(16) // DepositsKeyPrefix stores deposits.
@@ -27,4 +25,11 @@ var (
 	ConstitutionKey               = collections.NewPrefix(49) // ConstitutionKey stores a chain's constitution.
 	ProposalVoteOptionsKeyPrefix  = collections.NewPrefix(50) // ProposalVoteOptionsKeyPrefix stores the vote options of proposals.
 	MessageBasedParamsKey         = collections.NewPrefix(51) // MessageBasedParamsKey stores the message based gov params.
+	ProposalIndexKey              = collections.NewPrefix(52) // ProposalIndexKey stores the proposal index.
+)
+
+// Reserved KVStore keys for the gov module
+var (
+	_ = collections.NewPrefix(1)
+	_ = collections.NewPrefix(2)
 )

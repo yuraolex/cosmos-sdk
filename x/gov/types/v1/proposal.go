@@ -5,7 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/codec/types"
+	"cosmossdk.io/collections"
+	"cosmossdk.io/collections/indexes"
+	"cosmossdk.io/x/gov/types"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 )
@@ -74,14 +78,14 @@ func (p Proposal) GetMinDepositFromParams(params Params) sdk.Coins {
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (p Proposal) UnpackInterfaces(unpacker types.AnyUnpacker) error {
+func (p Proposal) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	return sdktx.UnpackInterfaces(unpacker, p.Messages)
 }
 
 // Proposals is an array of proposal
 type Proposals []*Proposal
 
-var _ types.UnpackInterfacesMessage = Proposals{}
+var _ codectypes.UnpackInterfacesMessage = Proposals{}
 
 // String implements stringer interface
 func (p Proposals) String() string {
@@ -94,7 +98,7 @@ func (p Proposals) String() string {
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (p Proposals) UnpackInterfaces(unpacker types.AnyUnpacker) error {
+func (p Proposals) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	for _, x := range p {
 		err := x.UnpackInterfaces(unpacker)
 		if err != nil {
@@ -140,4 +144,50 @@ func ValidProposalStatus(status ProposalStatus) bool {
 		return true
 	}
 	return false
+}
+
+// ProposalIndexes is a collection of indexes for governance v1 proposals
+type ProposalIndexes struct {
+	// reference key: proposal status + deposit end time (unix time), primary key: proposal id, value: proposal
+	StatusDepositEndTime *indexes.Multi[collections.Pair[int32, time.Time], uint64, Proposal]
+	// reference key: proposal status + voting end time (unix time), primary key: proposal id, value: proposal
+	StatusVotingEndTime *indexes.Multi[collections.Pair[int32, time.Time], uint64, Proposal]
+}
+
+func (a ProposalIndexes) IndexesList() []collections.Index[uint64, Proposal] {
+	return []collections.Index[uint64, Proposal]{a.StatusDepositEndTime, a.StatusVotingEndTime}
+}
+
+// NewProposalIndexes returns a new ProposalIndexes
+func NewProposalIndexes(sb *collections.SchemaBuilder) ProposalIndexes {
+	return ProposalIndexes{
+		StatusDepositEndTime: indexes.NewMulti(
+			sb,
+			types.ProposalIndexKey,
+			"proposal_by_status_and_deposit_end_time",
+			collections.PairKeyCodec(collections.Int32Key, sdk.TimeKey),
+			collections.Uint64Key,
+			func(key uint64, v Proposal) (collections.Pair[int32, time.Time], error) {
+				if v.DepositEndTime == nil {
+					return collections.Join(int32(v.Status), time.Time{}), nil
+				}
+
+				return collections.Join(int32(v.Status), *v.DepositEndTime), nil
+			},
+		),
+		StatusVotingEndTime: indexes.NewMulti(
+			sb,
+			types.ProposalIndexKey,
+			"proposal_by_status_and_voting_end_time",
+			collections.PairKeyCodec(collections.Int32Key, sdk.TimeKey),
+			collections.Uint64Key,
+			func(key uint64, v Proposal) (collections.Pair[int32, time.Time], error) {
+				if v.VotingEndTime == nil {
+					return collections.Join(int32(v.Status), time.Time{}), nil
+				}
+
+				return collections.Join(int32(v.Status), *v.VotingEndTime), nil
+			},
+		),
+	}
 }

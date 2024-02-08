@@ -31,6 +31,7 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 			// this could be due to some types missing their registration
 			// instead of returning an error (i.e, halting the chain), we fail the proposal
 			if errors.Is(err, collections.ErrEncoding) {
+				proposal.Id = proposalID
 				if err := failUnsupportedProposal(logger, ctx, keeper, proposal, err.Error(), false); err != nil {
 					return false, err
 				}
@@ -53,10 +54,10 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 		if err != nil {
 			return false, err
 		}
-		if !params.BurnProposalDepositPrevote {
-			err = keeper.RefundAndDeleteDeposits(ctx, proposalID) // refund deposit if proposal got removed without getting 100% of the proposal
-		} else {
+		if params.BurnProposalDepositPrevote {
 			err = keeper.DeleteAndBurnDeposits(ctx, proposalID) // burn the deposit if proposal got removed without getting 100% of the proposal
+		} else {
+			err = keeper.RefundAndDeleteDeposits(ctx, proposalID) // refund deposit if proposal got removed without getting 100% of the proposal
 		}
 
 		if err != nil {
@@ -97,13 +98,14 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 
 	// fetch active proposals whose voting periods have ended (are passed the block time)
 	rng = collections.NewPrefixUntilPairRange[collections.Pair[int32, time.Time], uint64](collections.Join(int32(v1.StatusVotingPeriod), ctx.HeaderInfo().Time))
-	err = keeper.Proposals.Indexes.StatusVotingEndTime.Walk(ctx, rng, func(key collections.Pair[int32, time.Time], proposalID uint64) (bool, error) {
+	return keeper.Proposals.Indexes.StatusVotingEndTime.Walk(ctx, rng, func(key collections.Pair[int32, time.Time], proposalID uint64) (bool, error) {
 		proposal, err := keeper.Proposals.Get(ctx, proposalID)
 		if err != nil {
 			// if the proposal has an encoding error, this means it cannot be processed by x/gov
 			// this could be due to some types missing their registration
 			// instead of returning an error (i.e, halting the chain), we fail the proposal
 			if errors.Is(err, collections.ErrEncoding) {
+				proposal.Id = proposalID
 				if err := failUnsupportedProposal(logger, ctx, keeper, proposal, err.Error(), true); err != nil {
 					return false, err
 				}
@@ -264,7 +266,6 @@ func EndBlocker(ctx sdk.Context, keeper *keeper.Keeper) error {
 
 		return false, nil
 	})
-	return err
 }
 
 // executes handle(msg) and recovers from panic.

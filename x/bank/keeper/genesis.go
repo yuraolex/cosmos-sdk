@@ -66,6 +66,7 @@ func (k BaseKeeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		k.GetParams(ctx),
 		k.GetAccountsBalances(ctx),
 		totalSupply,
+		k.GetAllMaxSupply(ctx),
 		k.GetAllDenomMetaData(ctx),
 		k.GetAllSendEnabledEntries(ctx),
 	)

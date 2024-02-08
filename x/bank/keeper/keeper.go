@@ -230,6 +230,17 @@ func (k BaseKeeper) HasMaxSupply(ctx context.Context, denom string) bool {
 	return has && err == nil
 }
 
+// GetAllMaxSupply retrieves max supply for all coins in the store.
+func (k BaseKeeper) GetAllMaxSupply(ctx context.Context) sdk.Coins {
+	maxSupplyList := sdk.Coins{}
+	k.IterateMaxSupply(ctx, func(maxSupply sdk.Coin) bool {
+		maxSupplyList = append(maxSupplyList, maxSupply)
+		return false
+	})
+
+	return maxSupplyList
+}
+
 // GetDenomMetaData retrieves the denomination metadata. returns the metadata and true if the denom exists,
 // false otherwise.
 func (k BaseKeeper) GetDenomMetaData(ctx context.Context, denom string) (types.Metadata, bool) {
@@ -486,6 +497,18 @@ func (k BaseKeeper) trackUndelegation(ctx context.Context, addr sdk.AccAddress, 
 // The iteration stops if the callback returns true.
 func (k BaseViewKeeper) IterateTotalSupply(ctx context.Context, cb func(sdk.Coin) bool) {
 	err := k.Supply.Walk(ctx, nil, func(s string, m math.Int) (bool, error) {
+		return cb(sdk.NewCoin(s, m)), nil
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+// IterateMaxSupply iterates over the max supply calling the given cb (callback) function
+// with the balance of each coin.
+// The iteration stops if the callback returns true.
+func (k BaseViewKeeper) IterateMaxSupply(ctx context.Context, cb func(sdk.Coin) bool) {
+	err := k.MaxSupply.Walk(ctx, nil, func(s string, m math.Int) (bool, error) {
 		return cb(sdk.NewCoin(s, m)), nil
 	})
 	if err != nil {

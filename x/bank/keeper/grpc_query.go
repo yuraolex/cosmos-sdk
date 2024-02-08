@@ -163,6 +163,25 @@ func (k BaseKeeper) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest)
 	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply.Amount)}, nil
 }
 
+// MaxSupplyOf implements the Query/MaxSupplyOf gRPC method
+func (k BaseKeeper) MaxSupplyOf(c context.Context, req *types.QueryMaxSupplyOfRequest) (*types.QueryMaxSupplyOfResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	if err := sdk.ValidateDenom(req.Denom); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+	if k.HasMaxSupply(ctx, req.Denom) {
+		maxSupply := k.GetMaxSupply(ctx, req.Denom)
+		return &types.QueryMaxSupplyOfResponse{Amount: sdk.NewCoin(req.Denom, maxSupply.Amount)}, nil
+	}
+
+	return nil, status.Errorf(codes.NotFound, "not found max supply for denom %s", req.Denom)
+}
+
 // Params implements the gRPC service handler for querying x/bank parameters.
 func (k BaseKeeper) Params(ctx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	if req == nil {

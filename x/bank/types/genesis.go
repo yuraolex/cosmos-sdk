@@ -74,15 +74,24 @@ func (gs GenesisState) Validate() error {
 		}
 	}
 
+	if !gs.MaxSupply.Empty() {
+		// NOTE: this errors if max supply for any given coin is zero
+		err := gs.MaxSupply.Validate()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(params Params, balances []Balance, supply sdk.Coins, denomMetaData []Metadata, sendEnabled []SendEnabled) *GenesisState {
+func NewGenesisState(params Params, balances []Balance, supply sdk.Coins, maxSupply sdk.Coins, denomMetaData []Metadata, sendEnabled []SendEnabled) *GenesisState {
 	rv := &GenesisState{
 		Params:        params,
 		Balances:      balances,
 		Supply:        supply,
+		MaxSupply:     maxSupply,
 		DenomMetadata: denomMetaData,
 		SendEnabled:   sendEnabled,
 	}
@@ -92,7 +101,7 @@ func NewGenesisState(params Params, balances []Balance, supply sdk.Coins, denomM
 
 // DefaultGenesisState returns a default bank module genesis state.
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(DefaultParams(), []Balance{}, sdk.Coins{}, []Metadata{}, []SendEnabled{})
+	return NewGenesisState(DefaultParams(), []Balance{}, sdk.Coins{}, sdk.Coins{}, []Metadata{}, []SendEnabled{})
 }
 
 // GetGenesisStateFromAppState returns x/bank GenesisState given raw application

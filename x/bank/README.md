@@ -969,6 +969,34 @@ Example Output:
 }
 ```
 
+### MaxSupplyOf
+
+The `MaxSupplyOf` endpoint allows users to query the max supply of a single coin.
+
+```shell
+cosmos.bank.v1beta1.Query/MaxSupplyOf
+```
+
+Example:
+
+```shell
+grpcurl -plaintext \
+    -d '{"denom":"stake"}' \
+    localhost:9090 \
+    cosmos.bank.v1beta1.Query/MaxSupplyOf
+```
+
+Example Output:
+
+```json
+{
+  "amount": {
+    "denom": "stake",
+    "amount": "10000000000"
+  }
+}
+```
+
 ### Params
 
 The `Params` endpoint allows users to query the parameters of the `bank` module.

@@ -33,6 +33,14 @@ message GenesisState {
   //
   // Since: cosmos-sdk 0.47
   repeated SendEnabled send_enabled = 5 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // max_supply represents the maximum supply. If it is left empty, then there is no maximum supply amount for coin.
+  repeated cosmos.base.v1beta1.Coin max_supply = 6 [
+    (amino.encoding)         = "legacy_coins",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable)     = false,
+    (amino.dont_omitempty)   = true
+  ];
 }
 
 // Balance defines an account address and balance pair used in the bank module's

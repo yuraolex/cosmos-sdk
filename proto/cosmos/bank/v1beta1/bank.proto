@@ -19,6 +19,12 @@ message Params {
   // As of cosmos-sdk 0.47, this only exists for backwards compatibility of genesis files.
   repeated SendEnabled send_enabled         = 1 [deprecated = true];
   bool                 default_send_enabled = 2;
+  repeated cosmos.base.v1beta1.Coin max_supply = 3 [
+    (gogoproto.nullable)     = false,
+    (amino.dont_omitempty)   = true,
+    (amino.encoding)         = "legacy_coins",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
 }
 
 // SendEnabled maps coin denom to a send_enabled status (whether a denom is

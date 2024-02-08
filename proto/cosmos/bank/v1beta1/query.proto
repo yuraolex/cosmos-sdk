@@ -71,6 +71,15 @@ service Query {
     option (google.api.http).get               = "/cosmos/bank/v1beta1/supply/by_denom";
   }
 
+  // MaxSupplyOf queries the max supply of a single coin.
+  //
+  // When called from another module, this query might consume a high amount of
+  // gas if the pagination field is incorrectly set.
+  rpc MaxSupplyOf(QueryMaxSupplyOfRequest) returns (QueryMaxSupplyOfResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get               = "/cosmos/bank/v1beta1/maxsupply/by_denom";
+  }
+
   // Params queries the parameters of x/bank module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
@@ -274,6 +283,18 @@ message QuerySupplyOfRequest {
 // QuerySupplyOfResponse is the response type for the Query/SupplyOf RPC method.
 message QuerySupplyOfResponse {
   // amount is the supply of the coin.
+  cosmos.base.v1beta1.Coin amount = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryMaxSupplyOfRequest is the request type for the Query/MaxSupplyOf RPC method.
+message QueryMaxSupplyOfRequest {
+  // denom is the coin denom to query max supply for.
+  string denom = 1;
+}
+
+// QueryMaxSupplyOfResponse is the response type for the Query/MaxSupplyOf RPC method.
+message QueryMaxSupplyOfResponse {
+  // amount is the max supply of the coin.
   cosmos.base.v1beta1.Coin amount = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 

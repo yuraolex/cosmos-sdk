@@ -4220,6 +4220,69 @@ paths:
           type: string
       tags:
         - Query
+  /cosmos/bank/v1beta1/max_supply/by_denom:
+    get:
+      summary: MaxSupplyOf queries the max supply of a single coin.
+      description: >-
+        When called from another module, this query might consume a high amount
+        of
+
+        gas if the pagination field is incorrectly set.
+      operationId: MaxSupplyOf
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              amount:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+            description: >-
+              QueryMaxSupplyOfResponse is the response type for the
+              Query/MaxSupplyOf RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: denom
+          description: denom is the coin denom to query max supply for.
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
   /cosmos/bank/v1beta1/params:
     get:
       summary: Params queries the parameters of x/bank module.
@@ -4262,6 +4325,23 @@ paths:
                       compatibility of genesis files.
                   default_send_enabled:
                     type: boolean
+                  max_supply:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
             description: >-
               QueryParamsResponse defines the response type for querying x/bank
               parameters.
@@ -4876,69 +4956,6 @@ paths:
       parameters:
         - name: denom
           description: denom is the coin denom to query balances for.
-          in: query
-          required: false
-          type: string
-      tags:
-        - Query
-  /cosmos/bank/v1beta1/max_supply/by_denom:
-    get:
-      summary: MaxSupplyOf queries the max supply of a single coin.
-      description: >-
-        When called from another module, this query might consume a high amount
-        of
-
-        gas if the pagination field is incorrectly set.
-      operationId: MaxSupplyOf
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              amount:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            description: >-
-              QueryMaxSupplyOfResponse is the response type for the Query/MaxSupplyOf
-              RPC method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: denom
-          description: denom is the coin denom to query max supply for.
           in: query
           required: false
           type: string
@@ -40481,6 +40498,20 @@ definitions:
           genesis files.
       default_send_enabled:
         type: boolean
+      max_supply:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
     description: Params defines the parameters for the bank module.
   cosmos.bank.v1beta1.QueryAllBalancesResponse:
     type: object
@@ -40967,6 +40998,24 @@ definitions:
       Query/DenomsMetadata RPC
 
       method.
+  cosmos.bank.v1beta1.QueryMaxSupplyOfResponse:
+    type: object
+    properties:
+      amount:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+    description: >-
+      QueryMaxSupplyOfResponse is the response type for the Query/MaxSupplyOf
+      RPC method.
   cosmos.bank.v1beta1.QueryParamsResponse:
     type: object
     properties:
@@ -41002,6 +41051,23 @@ definitions:
               compatibility of genesis files.
           default_send_enabled:
             type: boolean
+          max_supply:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
     description: >-
       QueryParamsResponse defines the response type for querying x/bank
       parameters.

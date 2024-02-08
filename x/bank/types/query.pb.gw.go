@@ -1382,7 +1382,7 @@ var (
 
 	pattern_Query_SupplyOf_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"cosmos", "bank", "v1beta1", "supply", "by_denom"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_MaxSupplyOf_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"cosmos", "bank", "v1beta1", "maxsupply", "by_denom"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_MaxSupplyOf_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"cosmos", "bank", "v1beta1", "max_supply", "by_denom"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"cosmos", "bank", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 

@@ -77,7 +77,7 @@ service Query {
   // gas if the pagination field is incorrectly set.
   rpc MaxSupplyOf(QueryMaxSupplyOfRequest) returns (QueryMaxSupplyOfResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get               = "/cosmos/bank/v1beta1/maxsupply/by_denom";
+    option (google.api.http).get               = "/cosmos/bank/v1beta1/max_supply/by_denom";
   }
 
   // Params queries the parameters of x/bank module.

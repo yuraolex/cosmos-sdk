@@ -25,6 +25,7 @@ const (
 	Query_SpendableBalanceByDenom_FullMethodName    = "/cosmos.bank.v1beta1.Query/SpendableBalanceByDenom"
 	Query_TotalSupply_FullMethodName                = "/cosmos.bank.v1beta1.Query/TotalSupply"
 	Query_SupplyOf_FullMethodName                   = "/cosmos.bank.v1beta1.Query/SupplyOf"
+	Query_MaxSupplyOf_FullMethodName                = "/cosmos.bank.v1beta1.Query/MaxSupplyOf"
 	Query_Params_FullMethodName                     = "/cosmos.bank.v1beta1.Query/Params"
 	Query_DenomMetadata_FullMethodName              = "/cosmos.bank.v1beta1.Query/DenomMetadata"
 	Query_DenomMetadataByQueryString_FullMethodName = "/cosmos.bank.v1beta1.Query/DenomMetadataByQueryString"
@@ -71,6 +72,11 @@ type QueryClient interface {
 	// When called from another module, this query might consume a high amount of
 	// gas if the pagination field is incorrectly set.
 	SupplyOf(ctx context.Context, in *QuerySupplyOfRequest, opts ...grpc.CallOption) (*QuerySupplyOfResponse, error)
+	// MaxSupplyOf queries the max supply of a single coin.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	MaxSupplyOf(ctx context.Context, in *QueryMaxSupplyOfRequest, opts ...grpc.CallOption) (*QueryMaxSupplyOfResponse, error)
 	// Params queries the parameters of x/bank module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// DenomMetadata queries the client metadata of a given coin denomination.
@@ -159,6 +165,15 @@ func (c *queryClient) TotalSupply(ctx context.Context, in *QueryTotalSupplyReque
 func (c *queryClient) SupplyOf(ctx context.Context, in *QuerySupplyOfRequest, opts ...grpc.CallOption) (*QuerySupplyOfResponse, error) {
 	out := new(QuerySupplyOfResponse)
 	err := c.cc.Invoke(ctx, Query_SupplyOf_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) MaxSupplyOf(ctx context.Context, in *QueryMaxSupplyOfRequest, opts ...grpc.CallOption) (*QueryMaxSupplyOfResponse, error) {
+	out := new(QueryMaxSupplyOfResponse)
+	err := c.cc.Invoke(ctx, Query_MaxSupplyOf_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -265,6 +280,11 @@ type QueryServer interface {
 	// When called from another module, this query might consume a high amount of
 	// gas if the pagination field is incorrectly set.
 	SupplyOf(context.Context, *QuerySupplyOfRequest) (*QuerySupplyOfResponse, error)
+	// MaxSupplyOf queries the max supply of a single coin.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	MaxSupplyOf(context.Context, *QueryMaxSupplyOfRequest) (*QueryMaxSupplyOfResponse, error)
 	// Params queries the parameters of x/bank module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// DenomMetadata queries the client metadata of a given coin denomination.
@@ -319,6 +339,9 @@ func (UnimplementedQueryServer) TotalSupply(context.Context, *QueryTotalSupplyRe
 }
 func (UnimplementedQueryServer) SupplyOf(context.Context, *QuerySupplyOfRequest) (*QuerySupplyOfResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SupplyOf not implemented")
+}
+func (UnimplementedQueryServer) MaxSupplyOf(context.Context, *QueryMaxSupplyOfRequest) (*QueryMaxSupplyOfResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MaxSupplyOf not implemented")
 }
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
@@ -458,6 +481,24 @@ func _Query_SupplyOf_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).SupplyOf(ctx, req.(*QuerySupplyOfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_MaxSupplyOf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryMaxSupplyOfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).MaxSupplyOf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_MaxSupplyOf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).MaxSupplyOf(ctx, req.(*QueryMaxSupplyOfRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -618,6 +659,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SupplyOf",
 			Handler:    _Query_SupplyOf_Handler,
+		},
+		{
+			MethodName: "MaxSupplyOf",
+			Handler:    _Query_MaxSupplyOf_Handler,
 		},
 		{
 			MethodName: "Params",

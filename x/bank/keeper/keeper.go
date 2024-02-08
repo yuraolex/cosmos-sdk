@@ -49,6 +49,9 @@ type Keeper interface {
 	DelegateCoins(ctx context.Context, delegatorAddr, moduleAccAddr sdk.AccAddress, amt sdk.Coins) error
 	UndelegateCoins(ctx context.Context, moduleAccAddr, delegatorAddr sdk.AccAddress, amt sdk.Coins) error
 
+	HasMaxSupply(ctx context.Context, denom string) bool
+	GetMaxSupply(ctx context.Context, denom string) sdk.Coin
+
 	types.QueryServer
 }
 
@@ -212,6 +215,21 @@ func (k BaseKeeper) HasSupply(ctx context.Context, denom string) bool {
 	return has && err == nil
 }
 
+// GetMaxSupply retrieves the MaxSupply from store
+func (k BaseKeeper) GetMaxSupply(ctx context.Context, denom string) sdk.Coin {
+	amt, err := k.MaxSupply.Get(ctx, denom)
+	if err != nil {
+		return sdk.NewCoin(denom, math.ZeroInt())
+	}
+	return sdk.NewCoin(denom, amt)
+}
+
+// HasMaxSupply checks if the max supply coin exists in store.
+func (k BaseKeeper) HasMaxSupply(ctx context.Context, denom string) bool {
+	has, err := k.MaxSupply.Has(ctx, denom)
+	return has && err == nil
+}
+
 // GetDenomMetaData retrieves the denomination metadata. returns the metadata and true if the denom exists,
 // false otherwise.
 func (k BaseKeeper) GetDenomMetaData(ctx context.Context, denom string) (types.Metadata, bool) {
@@ -364,6 +382,12 @@ func (k BaseKeeper) MintCoins(ctx context.Context, moduleName string, amounts sd
 
 	for _, amount := range amounts {
 		supply := k.GetSupply(ctx, amount.GetDenom())
+		maxSupply := k.GetMaxSupply(ctx, amount.GetDenom())
+
+		if maxSupply.Amount != math.ZeroInt() && supply.Amount.Add(amount.Amount).Sub(maxSupply.Amount).IsPositive() {
+			panic(errorsmod.Wrapf(sdkerrors.ErrMintCoins, "max supply: %s, supply: %s", maxSupply.Amount, supply.Amount))
+		}
+
 		supply = supply.Add(amount)
 		k.setSupply(ctx, supply)
 	}

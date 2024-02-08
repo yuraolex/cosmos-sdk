@@ -142,4 +142,7 @@ var (
 
 	// ErrPanic should only be set when we recovering from a panic
 	ErrPanic = errorsmod.ErrPanic
+
+	// ErrMintCoins defines an error when try to mint more coisn than defined max supply
+	ErrMintCoins = errorsmod.Register(RootCodespace, 42, "can not mint more coins that max supply")
 )

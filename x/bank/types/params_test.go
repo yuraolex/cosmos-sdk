@@ -38,22 +38,22 @@ func Test_ParamsString(t *testing.T) {
 	}{
 		{
 			name:     "default true empty send enabled",
-			params:   Params{[]*SendEnabled{}, true},
+			params:   Params{[]*SendEnabled{}, true, sdk.NewCoins()},
 			expected: "default_send_enabled:true ",
 		},
 		{
 			name:     "default false empty send enabled",
-			params:   Params{[]*SendEnabled{}, false},
+			params:   Params{[]*SendEnabled{}, false, sdk.NewCoins()},
 			expected: "",
 		},
 		{
 			name:     "default true one true send enabled",
-			params:   Params{[]*SendEnabled{{"foocoin", true}}, true},
+			params:   Params{[]*SendEnabled{{"foocoin", true}}, true, sdk.NewCoins()},
 			expected: "send_enabled:<denom:\"foocoin\" enabled:true > default_send_enabled:true ",
 		},
 		{
 			name:     "default true one false send enabled",
-			params:   Params{[]*SendEnabled{{"barcoin", false}}, true},
+			params:   Params{[]*SendEnabled{{"barcoin", false}}, true, sdk.NewCoins()},
 			expected: "send_enabled:<denom:\"barcoin\" > default_send_enabled:true ",
 		},
 	}
@@ -69,5 +69,5 @@ func Test_validateParams(t *testing.T) {
 	assert.NoError(t, DefaultParams().Validate(), "default")
 	assert.NoError(t, NewParams(true).Validate(), "true")
 	assert.NoError(t, NewParams(false).Validate(), "false")
-	assert.Error(t, Params{[]*SendEnabled{{"foocoing", false}}, true}.Validate(), "with SendEnabled entry")
+	assert.Error(t, Params{[]*SendEnabled{{"foocoing", false}}, true, sdk.NewCoins()}.Validate(), "with SendEnabled entry")
 }

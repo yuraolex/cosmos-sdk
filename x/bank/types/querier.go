@@ -11,6 +11,7 @@ const (
 	QueryAllBalances = "all_balances"
 	QueryTotalSupply = "total_supply"
 	QuerySupplyOf    = "supply_of"
+	QueryMaxSupplyOf = "max_supply_of"
 )
 
 // NewQueryBalanceRequest creates a new instance of QueryBalanceRequest.

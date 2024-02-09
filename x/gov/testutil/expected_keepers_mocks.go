@@ -473,6 +473,20 @@ func (mr *MockBankKeeperMockRecorder) GetDenomMetaData(ctx, denom interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenomMetaData", reflect.TypeOf((*MockBankKeeper)(nil).GetDenomMetaData), ctx, denom)
 }
 
+// GetMaxSupply mocks base method.
+func (m *MockBankKeeper) GetMaxSupply(ctx context.Context, denom string) types.Coin {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaxSupply", ctx, denom)
+	ret0, _ := ret[0].(types.Coin)
+	return ret0
+}
+
+// GetMaxSupply indicates an expected call of GetMaxSupply.
+func (mr *MockBankKeeperMockRecorder) GetMaxSupply(ctx, denom interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxSupply", reflect.TypeOf((*MockBankKeeper)(nil).GetMaxSupply), ctx, denom)
+}
+
 // GetPaginatedTotalSupply mocks base method.
 func (m *MockBankKeeper) GetPaginatedTotalSupply(ctx context.Context, pagination *query.PageRequest) (types.Coins, *query.PageResponse, error) {
 	m.ctrl.T.Helper()
@@ -558,6 +572,20 @@ func (m *MockBankKeeper) HasDenomMetaData(ctx context.Context, denom string) boo
 func (mr *MockBankKeeperMockRecorder) HasDenomMetaData(ctx, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasDenomMetaData", reflect.TypeOf((*MockBankKeeper)(nil).HasDenomMetaData), ctx, denom)
+}
+
+// HasMaxSupply mocks base method.
+func (m *MockBankKeeper) HasMaxSupply(ctx context.Context, denom string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasMaxSupply", ctx, denom)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasMaxSupply indicates an expected call of HasMaxSupply.
+func (mr *MockBankKeeperMockRecorder) HasMaxSupply(ctx, denom interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasMaxSupply", reflect.TypeOf((*MockBankKeeper)(nil).HasMaxSupply), ctx, denom)
 }
 
 // HasSupply mocks base method.
@@ -719,6 +747,21 @@ func (m *MockBankKeeper) LockedCoins(ctx context.Context, addr types.AccAddress)
 func (mr *MockBankKeeperMockRecorder) LockedCoins(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockedCoins", reflect.TypeOf((*MockBankKeeper)(nil).LockedCoins), ctx, addr)
+}
+
+// MaxSupplyOf mocks base method.
+func (m *MockBankKeeper) MaxSupplyOf(arg0 context.Context, arg1 *types0.QueryMaxSupplyOfRequest) (*types0.QueryMaxSupplyOfResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MaxSupplyOf", arg0, arg1)
+	ret0, _ := ret[0].(*types0.QueryMaxSupplyOfResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MaxSupplyOf indicates an expected call of MaxSupplyOf.
+func (mr *MockBankKeeperMockRecorder) MaxSupplyOf(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MaxSupplyOf", reflect.TypeOf((*MockBankKeeper)(nil).MaxSupplyOf), arg0, arg1)
 }
 
 // MintCoins mocks base method.
